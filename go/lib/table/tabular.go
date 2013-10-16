@@ -37,6 +37,7 @@ func New(size int) *Table {
 	for i := 0; i < size; i++ {
 		conf[i] = dflt
 	}
+	conf[size-1].PadRight = []byte{}
 	return NewWithConf(conf)
 }
 
@@ -63,6 +64,7 @@ func (t *Table) String() string {
 	spc := []byte{' '}
 	for _, v := range t.Data {
 		for i, cell := range v {
+			b.Write(t.CellConf[i].PadLeft)
 			if t.CellConf[i].Align == Right {
 				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
 			}
@@ -70,9 +72,7 @@ func (t *Table) String() string {
 			if t.CellConf[i].Align == Left {
 				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
 			}
-			if i < len(v)-1 {
-				b.Write(t.CellConf[i].PadRight)
-			}
+			b.Write(t.CellConf[i].PadRight)
 		}
 		b.WriteString("\n")
 	}

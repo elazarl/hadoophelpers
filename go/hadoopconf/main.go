@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/elazarl/hadoophelpers/go/lib/hadoopconf"
+	"github.com/foize/go.sgr"
 	"github.com/jessevdk/go-flags"
 	"github.com/elazarl/hadoophelpers/go/lib/table"
 	//"github.com/wsxiaoys/terminal"
@@ -39,6 +40,13 @@ func (o getOpts) Execute(args []string) error {
 			}
 		}
 	}
+	if opt.UseColors() {
+		t.CellConf[0].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[1].PadLeft = []byte(sgr.FgCyan)
+		t.CellConf[2].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[3].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[3].PadRight = []byte(sgr.Reset)
+	}
 	for _, arg := range keys {
 		v, src := c.SourceGet(arg)
 		if v == "" && src == hadoopconf.NoSource {
@@ -67,9 +75,17 @@ func (o setOpts) Execute(args []string) error {
 	return nil
 }
 
+func (o *gOpts) UseColors() bool {
+	if o.Color == "auto" {
+		return IsTerminal(os.Stdout.Fd())
+	}
+	return o.Color == "true" || o.Color == "t" || o.Color == "1"
+}
+
 type gOpts struct {
 	Get getOpts `command:"get"`
 	Set setOpts `command:"set"`
+	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
 	conf *hadoopconf.HadoopConf
 	executed bool
