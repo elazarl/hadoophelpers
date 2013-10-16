@@ -14,10 +14,9 @@ const (
 
 type CellConf struct {
 	Align Align
-	PadRight int
-	PadLeft int
+	PadRight []byte
+	PadLeft []byte
 }
-
 
 type Table struct {
 	CellConf []CellConf
@@ -34,7 +33,7 @@ func (t *Table) Add(cells ...string) *Table {
 
 func New(size int) *Table {
 	conf := make([]CellConf, size)
-	dflt := CellConf{Left, 1, 0}
+	dflt := CellConf{Left, []byte{' '}, []byte{}}
 	for i := 0; i < size; i++ {
 		conf[i] = dflt
 	}
@@ -72,7 +71,7 @@ func (t *Table) String() string {
 				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
 			}
 			if i < len(v)-1 {
-				b.Write(bytes.Repeat(spc, t.CellConf[i].PadRight))
+				b.Write(t.CellConf[i].PadRight)
 			}
 		}
 		b.WriteString("\n")
