@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/GeertJohan/go.linenoise"
 	//"github.com/davecgh/go-spew/spew"
 	"fmt"
 	"os"
@@ -23,6 +24,7 @@ type setOpts struct {
 }
 
 func (o getOpts) Execute(args []string) error {
+	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -50,6 +52,7 @@ func (o getOpts) Execute(args []string) error {
 }
 
 func (o setOpts) Execute(args []string) error {
+	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -69,6 +72,7 @@ type gOpts struct {
 	Set setOpts `command:"set"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
 	conf *hadoopconf.HadoopConf
+	executed bool
 }
 
 func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
@@ -94,7 +98,31 @@ var opt gOpts
 var conf *hadoopconf.HadoopConf
 
 func main() {
-	if args, err := flags.ParseArgs(&opt, os.Args[1:]); err != nil || len(args) > 0 {
+	parser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
+	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
+		fmt.Println("dead:", err)
 		os.Exit(1)
+	}
+	opt.getConf() // make sure we have correct conf
+	if !opt.executed {
+		if !IsTerminal(os.Stdout.Fd()) {
+			fmt.Println("terminal not recognized or not supported (windows)")
+			return
+		}
+		for {
+			str, err := linenoise.Line("hadoopconf> ")
+			linenoise.AddHistory(str)
+			if err != nil {
+				if err != linenoise.KillSignalError {
+					fmt.Println("Unexpected error: %s", err)
+				}
+				break
+			}
+			if args, err := parser.ParseArgs(strings.Fields(str)); err != nil {
+				fmt.Println("error:", err)
+			} else if len(args) > 0 {
+				fmt.Println("excessive arguments:", args)
+			}
+		}
 	}
 }
