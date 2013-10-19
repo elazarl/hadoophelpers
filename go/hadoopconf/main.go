@@ -17,11 +17,12 @@ import (
 )
 
 type getOpts struct {
-	Verbose bool `short:"v" long:"verbose" description:"Show verbose debug information"`
 }
 
 type setOpts struct {
-	Verbose bool `short:"v" long:"verbose" description:"Show verbose debug information"`
+}
+
+type envOpts struct {
 }
 
 func (o getOpts) Execute(args []string) error {
@@ -85,6 +86,8 @@ func (o *gOpts) UseColors() bool {
 type gOpts struct {
 	Get getOpts `command:"get"`
 	Set setOpts `command:"set"`
+	Env envOpts `command:"set"`
+	Verbose bool `short:"v" long:"verbose" default:"true" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
 	conf *hadoopconf.HadoopConf
