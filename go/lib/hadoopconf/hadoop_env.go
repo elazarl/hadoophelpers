@@ -2,6 +2,7 @@ package hadoopconf
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -47,11 +48,14 @@ func (envs Envs) Get(name string) *Var {
 func NewEnv(path string) (Envs, error) {
 	files := []string{}
 	for _, d := range []string{ path, filepath.Join(path, "etc", "hadoop"), filepath.Join(path, "conf") } {
-		r, err := filepath.Glob(filepath.Join(d, "*-env.bash"))
-		if err != nil || len(files) == 0 {
-			continue
+		r, err := filepath.Glob(filepath.Join(d, "*-env.sh"))
+		if err == nil && len(r) > 0 {
+			files = r
+			break
 		}
-		files = r
+	}
+	if len(files) == 0 {
+		return nil, errors.New("no *-env.sh files found in " + path)
 	}
 	envs := Envs{}
 	for _, file := range files {
@@ -64,6 +68,10 @@ func NewEnv(path string) (Envs, error) {
 	return envs, nil
 }
 
+var exportLine = regexp.MustCompile(`^export ([A-Z0-9_]+)="?([^"]*)"?`)
+var exportComment = regexp.MustCompile(`^#\s*export ([A-Z0-9_]+)=`)
+
+
 func NewEnvFromFile(path string) (*Env, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -71,10 +79,13 @@ func NewEnvFromFile(path string) (*Env, error) {
 	}
 	env := Env{path, nil}
 	scanner := bufio.NewScanner(f)
-	exportLine := regexp.MustCompile(`^export ([A-Z0-9]+)="([^"]+")`)
 	for scanner.Scan() {
-		matches := exportLine.FindStringSubmatch(scanner.Text())
-		env.Vars = append(env.Vars, &Var{matches[0], matches[1]})
+		if matches := exportLine.FindStringSubmatch(scanner.Text()); matches != nil {
+			env.Vars = append(env.Vars, &Var{matches[1], matches[2]})
+		}
+		if matches := exportComment.FindStringSubmatch(scanner.Text()); matches != nil {
+			env.Vars = append(env.Vars, &Var{matches[1], ""})
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
