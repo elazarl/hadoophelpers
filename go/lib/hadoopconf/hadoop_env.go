@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 // an evironment variable is a line of the form
@@ -17,6 +18,7 @@ type Env struct {
 }
 
 type Var struct {
+	line int
 	Name string
 	Val  string
 }
@@ -24,14 +26,29 @@ type Var struct {
 // AddIfNew adds a toadd, only if there's no tocheck
 // already in the value.
 // Use case is
-//     v.Update("-Xmx=", "-Xmx=10"
+//     v.Update("-Xmx=", "-Xmx=1g")
+// which updates occurences of -Xmx=... to -Xmx=1g
 func (v *Var) Update(update, newval string) {
-	re := regexp.MustCompile(regexp.QuoteMeta(update) + `[^ ]*`)
-	re.ReplaceAllString(v.Val, newval)
+	if strings.Contains(v.Val, update) {
+		re := regexp.MustCompile(regexp.QuoteMeta(update) + `[^ ]*`)
+		v.Val = re.ReplaceAllString(v.Val, newval)
+	} else {
+		v.Prepend(newval)
+	}
+}
+
+func (v *Var) Prepend(tok string) {
+	if v.Val != "" {
+		tok += " "
+	}
+	v.Val = tok + v.Val
 }
 
 func (v *Var) Append(tok string) {
-	v.Val += " " + tok
+	if v.Val != "" {
+		v.Val += " "
+	}
+	v.Val += tok
 }
 
 type Envs []*Env
@@ -79,12 +96,12 @@ func NewEnvFromFile(path string) (*Env, error) {
 	}
 	env := Env{path, nil}
 	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
+	for i := 0; scanner.Scan(); i++ {
 		if matches := exportLine.FindStringSubmatch(scanner.Text()); matches != nil {
-			env.Vars = append(env.Vars, &Var{matches[1], matches[2]})
+			env.Vars = append(env.Vars, &Var{i, matches[1], matches[2]})
 		}
 		if matches := exportComment.FindStringSubmatch(scanner.Text()); matches != nil {
-			env.Vars = append(env.Vars, &Var{matches[1], ""})
+			env.Vars = append(env.Vars, &Var{i, matches[1], ""})
 		}
 	}
 	if err := scanner.Err(); err != nil {
