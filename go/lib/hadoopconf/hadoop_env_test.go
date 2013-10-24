@@ -48,6 +48,13 @@ func TestHadoopEnvWrite(t *testing.T) {
 	Is(env.Get("HADOOP_NAMENODE_OPTS").Val, "-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS -Xms100")
 	Is(env.Get("HADOOP_OPTS").Val, "-Xms100")
 	Is(env.Get("HADOOP_OPT"), (*Var)(nil))
+	FailOnErr(env.Save())
+	// reevaluate tests after loading file from disk
+	env, err = NewEnv(filepath.Join(tempDir, hadoop1))
+	FailOnErr(err)
+	Is(env.Get("HADOOP_NAMENODE_OPTS").Val, "-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS -Xms100")
+	Is(env.Get("HADOOP_OPTS").Val, "-Xms100")
+	Is(env.Get("HADOOP_OPT"), (*Var)(nil))
 
 	env, err = NewEnv(filepath.Join(tempDir, hadoop2))
 	FailOnErr(err)
@@ -55,5 +62,11 @@ func TestHadoopEnvWrite(t *testing.T) {
 	env.Get("HADOOP_CLIENT_OPTS").Update("-Xmx", "-Xmx1024m")
 	Is(env.Get("HADOOP_CLIENT_OPTS").Val, "-Xmx1024m $HADOOP_CLIENT_OPTS")
 	env.Get("JSVC_HOME").Update("/home/jsvc", "/home/jsvc")
+	Is(env.Get("JSVC_HOME").Val, "/home/jsvc")
+	FailOnErr(env.Save())
+	// reevaluate tests after loading file from disk
+	env, err = NewEnv(filepath.Join(tempDir, hadoop2))
+	FailOnErr(err)
+	Is(env.Get("HADOOP_CLIENT_OPTS").Val, "-Xmx1024m $HADOOP_CLIENT_OPTS")
 	Is(env.Get("JSVC_HOME").Val, "/home/jsvc")
 }

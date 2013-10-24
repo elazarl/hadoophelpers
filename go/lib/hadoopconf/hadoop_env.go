@@ -3,6 +3,7 @@ package hadoopconf
 import (
 	"bufio"
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -57,6 +58,15 @@ func (envs Envs) Get(name string) *Var {
 	for _, env := range envs {
 		if r := env.Get(name); r != nil {
 			return r
+		}
+	}
+	return nil
+}
+
+func (envs Envs) Save() error {
+	for _, env := range envs {
+		if err := env.Save(); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -125,4 +135,34 @@ func (env *Env) GetValue(name string) string {
 		return ""
 	}
 	return v.Name
+}
+
+func (env *Env) Save() error {
+	out, err := ioutil.TempFile("/tmp", "gohadoop")
+	if err != nil {
+		return err
+	}
+	f, err := os.Open(env.Path)
+	if err != nil {
+		return err
+	}
+	scanner := bufio.NewScanner(f)
+	varlines := make(map[int]*Var)
+	for _, v := range env.Vars {
+		varlines[v.line] = v
+	}
+	for i := 0; scanner.Scan(); i++ {
+		if v, ok := varlines[i]; ok {
+			out.WriteString("export " + v.Name + "=\"" + v.Val + "\"\n")
+		} else {
+			out.WriteString(scanner.Text() + "\n")
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	if err := out.Close(); err != nil {
+		return err
+	}
+	return os.Rename(out.Name(), env.Path)
 }
