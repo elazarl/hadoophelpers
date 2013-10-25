@@ -71,6 +71,7 @@ func (envs Envs) Save() error {
 	}
 	return nil
 }
+        /*snprintf(systembuf, sizeof(systembuf), "echo 'attach %d\nbt\nquit' | gdb -quiet _test_main.out ", getpid());*/
 
 func NewEnv(path string) (Envs, error) {
 	files := []string{}
@@ -95,9 +96,24 @@ func NewEnv(path string) (Envs, error) {
 	return envs, nil
 }
 
-var exportLine = regexp.MustCompile(`^export ([A-Z0-9_]+)="?([^"]*)"?`)
-var exportComment = regexp.MustCompile(`^#\s*export ([A-Z0-9_]+)=`)
+var exportLine = regexp.MustCompile(`^\s*(#?)\s*export\s+([A-Z0-9_]+)=(.*)$`)
 
+// parseExport is a poor man's parser of bash export line.
+// If you don't abuse bash too much - it should work.
+func parseExport(lineno int, line string) *Var {
+	if matches := exportLine.FindStringSubmatch(line); matches != nil {
+		s := matches[3]
+		if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
+			s = s[1:len(s)-1]
+			s = strings.Replace(s, `"`, `\"`, -1)
+		}
+		if matches[1] == "#" {
+			s = ""
+		}
+		return &Var{lineno, matches[2], s}
+	}
+	return nil
+}
 
 func NewEnvFromFile(path string) (*Env, error) {
 	f, err := os.Open(path)
@@ -107,11 +123,8 @@ func NewEnvFromFile(path string) (*Env, error) {
 	env := Env{path, nil}
 	scanner := bufio.NewScanner(f)
 	for i := 0; scanner.Scan(); i++ {
-		if matches := exportLine.FindStringSubmatch(scanner.Text()); matches != nil {
-			env.Vars = append(env.Vars, &Var{i, matches[1], matches[2]})
-		}
-		if matches := exportComment.FindStringSubmatch(scanner.Text()); matches != nil {
-			env.Vars = append(env.Vars, &Var{i, matches[1], ""})
+		if v := parseExport(i, scanner.Text()); v != nil {
+			env.Vars = append(env.Vars, v)
 		}
 	}
 	if err := scanner.Err(); err != nil {

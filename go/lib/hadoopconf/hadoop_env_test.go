@@ -7,14 +7,18 @@ import (
 	. "github.com/robertkrimen/terst"
 )
 
-func TestEnvRegexp(t *testing.T) {
+func TestEnvExportParse(t *testing.T) {
 	Terst(t)
-	m := exportLine.FindStringSubmatch(`export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"`)
-	if !IsNot(len(m), 0) {
-		return
+	v := parseExport(0, `export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"`)
+	if IsNot(v, nil) {
+		Is(v.Name, "HADOOP_NAMENODE_OPTS")
+		Is(v.Val, "-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS")
 	}
-	Is(m[1], "HADOOP_NAMENODE_OPTS")
-	Is(m[2], "-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS")
+	v = parseExport(0, `export HADOOP_OPTS=${foo:"bar gar"}`)
+	if IsNot(v, nil) {
+		Is(v.Name, "HADOOP_OPTS")
+		Is(v.Val, "${foo:\"bar gar\"}")
+	}
 }
 
 func TestHadoopEnv(t *testing.T) {
