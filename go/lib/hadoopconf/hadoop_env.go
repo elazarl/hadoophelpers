@@ -63,6 +63,14 @@ func (envs Envs) Get(name string) *Var {
 	return nil
 }
 
+func (envs Envs) Keys() []string {
+	keys := []string{}
+	for _, env := range envs {
+		keys = append(keys, env.Keys()...)
+	}
+	return keys
+}
+
 func (envs Envs) Save() error {
 	for _, env := range envs {
 		if err := env.Save(); err != nil {
@@ -140,6 +148,14 @@ func (env *Env) Get(name string) *Var {
 		}
 	}
 	return nil
+}
+
+func (env *Env) Keys() []string {
+	keys := []string{}
+	for _, v := range env.Vars {
+		keys = append(keys, v.Name)
+	}
+	return keys
 }
 
 func (env *Env) GetValue(name string) string {
