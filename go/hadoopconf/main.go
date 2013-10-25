@@ -16,14 +16,15 @@ import (
 	//"github.com/wsxiaoys/terminal"
 )
 
-type getOpts struct {
-}
+type getOpts struct {}
 
-type setOpts struct {
-}
+type setOpts struct {}
 
-type envOpts struct {
-}
+type envAddOpts struct {}
+
+type envSetOpts struct {}
+
+type envOpts struct {}
 
 func (o getOpts) Execute(args []string) error {
 	opt.executed = true
@@ -76,6 +77,76 @@ func (o setOpts) Execute(args []string) error {
 	return nil
 }
 
+func (o envSetOpts) Execute(args []string) error {
+	opt.executed = true
+	if len(args) == 0 {
+		return errors.New("get must have nonzero number arguments")
+	}
+	v := opt.getEnv().Get(args[0])
+	if v == nil {
+		fmt.Println("No such variable", v)
+	}
+	t := table.New(3)
+	t.Add(v.Name, "was", v.Val)
+	fmt.Println(v.Name, "was", v.Val)
+	v.Val = strings.Join(args[1:], " ")
+	t.Add("", "now", v.Val)
+	fmt.Print(t.String())
+	return nil
+}
+
+func (o envAddOpts) Execute(args []string) error {
+	opt.executed = true
+	if len(args) == 0 {
+		return errors.New("get must have nonzero number arguments")
+	}
+	v := opt.getEnv().Get(args[0])
+	if v == nil {
+		fmt.Println("No such variable", v)
+	}
+	t := table.New(3)
+	t.Add(v.Name, "was", v.Val)
+	fmt.Println(v.Name, "was", v.Val)
+	v.Append(strings.Join(args[1:], " "))
+	t.Add("", "now", v.Val)
+	fmt.Print(t.String())
+	return nil
+}
+
+func (o envOpts) Execute(args []string) error {
+	opt.executed = true
+	if len(args) == 0 {
+		return errors.New("get must have nonzero number arguments")
+	}
+	t := table.New(3)
+	c := opt.getEnv()
+	keys := []string{}
+	for _, key := range c.Keys() {
+		for _, arg := range args {
+			if ok, _ := filepath.Match(arg, key); ok {
+				keys = append(keys, key)
+				break
+			}
+		}
+	}
+	if opt.UseColors() {
+		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
+		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[2].PadRight = []byte(sgr.Reset)
+	}
+	for _, arg := range keys {
+		v := c.Get(arg)
+		if v == nil {
+			t.Add(arg, "", "no property")
+		} else {
+			t.Add(arg, "=", v.Val)
+		}
+	}
+	fmt.Print(t.String())
+	return nil
+}
+
 func (o *gOpts) UseColors() bool {
 	if o.Color == "auto" {
 		return IsTerminal(os.Stdout.Fd())
@@ -86,12 +157,38 @@ func (o *gOpts) UseColors() bool {
 type gOpts struct {
 	Get getOpts `command:"get"`
 	Set setOpts `command:"set"`
-	Env envOpts `command:"set"`
+	SetEnv envSetOpts `command:"envset"`
+	AddEnv envAddOpts `command:"envadd"`
+	Env envAddOpts `command:"env"`
 	Verbose bool `short:"v" long:"verbose" default:"true" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
 	conf *hadoopconf.HadoopConf
+	env hadoopconf.Envs
 	executed bool
+}
+
+func (opt *gOpts) setConfPath() {
+	var p = "."
+	if opt.ConfPath != "" {
+		p = opt.ConfPath
+	} else if os.Getenv("HADOOP_CONF") != "" {
+		p = os.Getenv("HADOOP_CONF")
+	}
+	opt.ConfPath = p
+}
+
+func (opt *gOpts) getEnv() hadoopconf.Envs {
+	if opt.env != nil {
+		return opt.env
+	}
+	var err error
+	opt.env, err = hadoopconf.NewEnv(opt.ConfPath)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return opt.env
 }
 
 func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
