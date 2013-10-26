@@ -159,7 +159,7 @@ type gOpts struct {
 	Set setOpts `command:"set"`
 	SetEnv envSetOpts `command:"envset"`
 	AddEnv envAddOpts `command:"envadd"`
-	Env envAddOpts `command:"env"`
+	Env envOpts `command:"env"`
 	Verbose bool `short:"v" long:"verbose" default:"true" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
@@ -183,6 +183,7 @@ func (opt *gOpts) getEnv() hadoopconf.Envs {
 		return opt.env
 	}
 	var err error
+	opt.setConfPath()
 	opt.env, err = hadoopconf.NewEnv(opt.ConfPath)
 	if err != nil {
 		fmt.Println(err)
