@@ -77,6 +77,17 @@ func (o setOpts) Execute(args []string) error {
 	return nil
 }
 
+func assignmentTable() *table.Table {
+	t := table.New(3)
+	if opt.UseColors() {
+		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
+		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[2].PadRight = []byte(sgr.Reset)
+	}
+	return t
+}
+
 func (o envSetOpts) Execute(args []string) error {
 	opt.executed = true
 	if len(args) == 0 {
@@ -86,13 +97,7 @@ func (o envSetOpts) Execute(args []string) error {
 	if v == nil {
 		fmt.Println("No such variable", v)
 	}
-	t := table.New(3)
-	if opt.UseColors() {
-		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
-		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
-		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
-		t.CellConf[2].PadRight = []byte(sgr.Reset)
-	}
+	t := assignmentTable()
 	t.Add(v.Name, "was", v.Val)
 	v.Val = strings.Join(args[1:], " ")
 	t.Add("", "now", v.Val)
@@ -112,13 +117,7 @@ func (o envAddOpts) Execute(args []string) error {
 	if v == nil {
 		fmt.Println("No such variable", v)
 	}
-	t := table.New(3)
-	if opt.UseColors() {
-		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
-		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
-		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
-		t.CellConf[2].PadRight = []byte(sgr.Reset)
-	}
+	t := assignmentTable()
 	t.Add(v.Name, "was", v.Val)
 	v.Append(strings.Join(args[1:], " "))
 	t.Add("", "now", v.Val)
@@ -134,7 +133,7 @@ func (o envOpts) Execute(args []string) error {
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
-	t := table.New(3)
+	t := assignmentTable()
 	c := opt.getEnv()
 	keys := []string{}
 	for _, key := range c.Keys() {
@@ -144,12 +143,6 @@ func (o envOpts) Execute(args []string) error {
 				break
 			}
 		}
-	}
-	if opt.UseColors() {
-		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
-		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
-		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
-		t.CellConf[2].PadRight = []byte(sgr.Reset)
 	}
 	for _, arg := range keys {
 		v := c.Get(arg)
