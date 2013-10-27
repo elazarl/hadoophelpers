@@ -24,7 +24,7 @@ type Var struct {
 	Val  string
 }
 
-// AddIfNew adds a toadd, only if there's no tocheck
+// Update adds a toadd, only if there's no tocheck
 // already in the value.
 // Use case is
 //     v.Update("-Xmx=", "-Xmx=1g")
@@ -36,6 +36,12 @@ func (v *Var) Update(update, newval string) {
 	} else {
 		v.Prepend(newval)
 	}
+}
+
+// Del deletes value from the variable
+func (v *Var) Del(val string) {
+	re := regexp.MustCompile(` ?` + regexp.QuoteMeta(val) + ` ?`)
+	v.Val = re.ReplaceAllString(v.Val, " ")
 }
 
 func (v *Var) Prepend(tok string) {

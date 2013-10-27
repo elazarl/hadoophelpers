@@ -35,6 +35,8 @@ func TestHadoopEnv(t *testing.T) {
 	Is(len(env), 4)
 	Is(env.Get("HADOOP_CLIENT_OPTS").Val, "-Xmx512m $HADOOP_CLIENT_OPTS")
 	Is(env.Get("HADOOP_OPTS").Val, "$HADOOP_OPTS -Djava.net.preferIPv4Stack=true")
+	env.Get("HADOOP_OPTS").Del("-Djava.net.preferIPv4Stack=true")
+	Is(env.Get("HADOOP_OPTS").Val, "$HADOOP_OPTS")
 	Is(env.Get("JSVC_HOME").Val, "")
 	Is(env.Get("HADOOP_JOB_HISTORYSERVER_HEAPSIZE").Val, "1000")
 	Is(env.Get("HADOOP_OPT"), (*Var)(nil))
