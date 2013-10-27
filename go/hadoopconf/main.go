@@ -94,7 +94,6 @@ func (o envSetOpts) Execute(args []string) error {
 		t.CellConf[2].PadRight = []byte(sgr.Reset)
 	}
 	t.Add(v.Name, "was", v.Val)
-	fmt.Println(v.Name, "was", v.Val)
 	v.Val = strings.Join(args[1:], " ")
 	t.Add("", "now", v.Val)
 	if err := opt.getEnv().Save(); err != nil {
@@ -121,7 +120,6 @@ func (o envAddOpts) Execute(args []string) error {
 		t.CellConf[2].PadRight = []byte(sgr.Reset)
 	}
 	t.Add(v.Name, "was", v.Val)
-	fmt.Println(v.Name, "was", v.Val)
 	v.Append(strings.Join(args[1:], " "))
 	t.Add("", "now", v.Val)
 	if err := opt.getEnv().Save(); err != nil {
