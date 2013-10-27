@@ -87,10 +87,19 @@ func (o envSetOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := table.New(3)
+	if opt.UseColors() {
+		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
+		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[2].PadRight = []byte(sgr.Reset)
+	}
 	t.Add(v.Name, "was", v.Val)
 	fmt.Println(v.Name, "was", v.Val)
 	v.Val = strings.Join(args[1:], " ")
 	t.Add("", "now", v.Val)
+	if err := opt.getEnv().Save(); err != nil {
+		return err
+	}
 	fmt.Print(t.String())
 	return nil
 }
@@ -105,10 +114,19 @@ func (o envAddOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := table.New(3)
+	if opt.UseColors() {
+		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
+		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[2].PadRight = []byte(sgr.Reset)
+	}
 	t.Add(v.Name, "was", v.Val)
 	fmt.Println(v.Name, "was", v.Val)
 	v.Append(strings.Join(args[1:], " "))
 	t.Add("", "now", v.Val)
+	if err := opt.getEnv().Save(); err != nil {
+		return err
+	}
 	fmt.Print(t.String())
 	return nil
 }
