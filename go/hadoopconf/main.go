@@ -80,12 +80,13 @@ func (o setOpts) Execute(args []string) error {
 }
 
 func assignmentTable() *table.Table {
-	t := table.New(3)
+	t := table.New(4)
 	if opt.UseColors() {
-		t.CellConf[0].PadLeft = []byte(sgr.FgCyan)
-		t.CellConf[1].PadLeft = []byte(sgr.FgGrey)
-		t.CellConf[2].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
-		t.CellConf[2].PadRight = []byte(sgr.Reset)
+		t.CellConf[0].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[1].PadLeft = []byte(sgr.FgCyan)
+		t.CellConf[2].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[3].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[3].PadRight = []byte(sgr.Reset)
 	}
 	return t
 }
@@ -100,9 +101,9 @@ func (o envSetOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := assignmentTable()
-	t.Add(v.Name, "was", v.Val)
+	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
 	v.Val = strings.Join(args[1:], " ")
-	t.Add("", "now", v.Val)
+	t.Add("", "", "now", v.Val)
 	if err := opt.getEnv().Save(); err != nil {
 		return err
 	}
@@ -120,9 +121,9 @@ func (o envAddOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := assignmentTable()
-	t.Add(v.Name, "was", v.Val)
+	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
 	v.Append(strings.Join(args[1:], " "))
-	t.Add("", "now", v.Val)
+	t.Add("", "", "now", v.Val)
 	if err := opt.getEnv().Save(); err != nil {
 		return err
 	}
@@ -140,9 +141,9 @@ func (o envDelOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := assignmentTable()
-	t.Add(v.Name, "was", v.Val)
+	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
 	v.Del(strings.Join(args[1:], " "))
-	t.Add("", "now", v.Val)
+	t.Add("", "", "now", v.Val)
 	if err := opt.getEnv().Save(); err != nil {
 		return err
 	}
@@ -169,9 +170,9 @@ func (o envOpts) Execute(args []string) error {
 	for _, arg := range keys {
 		v := c.Get(arg)
 		if v == nil {
-			t.Add(arg, "", "no property")
+			t.Add("", arg, "", "no property")
 		} else {
-			t.Add(arg, "=", v.Val)
+			t.Add(v.Source, arg, "=", v.Val)
 		}
 	}
 	fmt.Print(t.String())

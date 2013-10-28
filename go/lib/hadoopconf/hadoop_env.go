@@ -20,6 +20,7 @@ type Env struct {
 
 type Var struct {
 	line int
+	Source string
 	Name string
 	Val  string
 }
@@ -114,7 +115,7 @@ var exportLine = regexp.MustCompile(`^\s*(#?)\s*export\s+([A-Z0-9_]+)=(.*)$`)
 
 // parseExport is a poor man's parser of bash export line.
 // If you don't abuse bash too much - it should work.
-func parseExport(lineno int, line string) *Var {
+func parseExport(filename string, lineno int, line string) *Var {
 	if matches := exportLine.FindStringSubmatch(line); matches != nil {
 		s := matches[3]
 		if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
@@ -123,7 +124,7 @@ func parseExport(lineno int, line string) *Var {
 		if matches[1] == "#" {
 			s = ""
 		}
-		return &Var{lineno, matches[2], s}
+		return &Var{lineno, filename, matches[2], s}
 	}
 	return nil
 }
@@ -136,7 +137,7 @@ func NewEnvFromFile(path string) (*Env, error) {
 	env := Env{path, nil}
 	scanner := bufio.NewScanner(f)
 	for i := 0; scanner.Scan(); i++ {
-		if v := parseExport(i, scanner.Text()); v != nil {
+		if v := parseExport(path, i, scanner.Text()); v != nil {
 			env.Vars = append(env.Vars, v)
 		}
 	}
