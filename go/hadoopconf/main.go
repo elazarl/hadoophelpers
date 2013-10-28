@@ -172,7 +172,7 @@ func (o envOpts) Execute(args []string) error {
 		if v == nil {
 			t.Add("", arg, "", "no property")
 		} else {
-			t.Add(v.Source, arg, "=", v.Val)
+			t.Add(filepath.Base(v.Source), arg, "=", v.Val)
 		}
 	}
 	fmt.Print(t.String())
