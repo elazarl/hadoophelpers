@@ -247,6 +247,70 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 var opt gOpts
 var conf *hadoopconf.HadoopConf
 
+// bash-like command line parser, splits string to arguments
+func parseCommandLine(line string) []string {
+	args := []string{}
+	type State int
+	const (
+		REGULAR State = iota
+		IN_DQUOTE
+		IN_QUOTE
+		IN_ESCAPE
+	)
+	state := REGULAR
+	escapePrevState := REGULAR
+	next := []byte{}
+	seenQuote := false
+	for _, r := range []byte(line) {
+		switch state {
+		case REGULAR:
+			if r == ' ' || r == '\t' {
+				if len(next) > 0 || seenQuote {
+					args = append(args, string(next))
+				}
+				next = nil
+				seenQuote = false
+			} else if r == '\'' {
+				seenQuote = true
+				state = IN_QUOTE
+			} else if r == '"' {
+				seenQuote = true
+				state = IN_DQUOTE
+			} else if r == '\\' {
+				state = IN_ESCAPE
+				escapePrevState = REGULAR
+			} else {
+				next = append(next, r)
+			}
+		case IN_QUOTE:
+			if r == '\'' {
+				state = REGULAR
+			} else if r == '\\' {
+				state = IN_ESCAPE
+				escapePrevState = IN_QUOTE
+			} else {
+				next = append(next, r)
+			}
+		case IN_DQUOTE:
+			if r == '"' {
+				state = REGULAR
+			} else if r == '\\' {
+				state = IN_ESCAPE
+				escapePrevState = IN_DQUOTE
+			} else {
+				next = append(next, r)
+			}
+		case IN_ESCAPE:
+			next = append(next, r)
+			state = escapePrevState
+		}
+	}
+	if len(next) > 0 || seenQuote {
+		args = append(args, string(next))
+	}
+	return args
+}
+
 func main() {
 	parser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
 	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
