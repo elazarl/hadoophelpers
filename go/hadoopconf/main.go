@@ -22,6 +22,8 @@ type setOpts struct {}
 
 type envAddOpts struct {}
 
+type envDelOpts struct {}
+
 type envSetOpts struct {}
 
 type envOpts struct {}
@@ -128,6 +130,26 @@ func (o envAddOpts) Execute(args []string) error {
 	return nil
 }
 
+func (o envDelOpts) Execute(args []string) error {
+	opt.executed = true
+	if len(args) == 0 {
+		return errors.New("get must have nonzero number arguments")
+	}
+	v := opt.getEnv().Get(args[0])
+	if v == nil {
+		fmt.Println("No such variable", v)
+	}
+	t := assignmentTable()
+	t.Add(v.Name, "was", v.Val)
+	v.Del(strings.Join(args[1:], " "))
+	t.Add("", "now", v.Val)
+	if err := opt.getEnv().Save(); err != nil {
+		return err
+	}
+	fmt.Print(t.String())
+	return nil
+}
+
 func (o envOpts) Execute(args []string) error {
 	opt.executed = true
 	if len(args) == 0 {
@@ -168,6 +190,7 @@ type gOpts struct {
 	Set setOpts `command:"set"`
 	SetEnv envSetOpts `command:"envset"`
 	AddEnv envAddOpts `command:"envadd"`
+	DelEnv envDelOpts `command:"envdel"`
 	Env envOpts `command:"env"`
 	Verbose bool `short:"v" long:"verbose" default:"true" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
