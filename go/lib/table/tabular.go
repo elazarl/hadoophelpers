@@ -69,7 +69,7 @@ func (t *Table) String() string {
 				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
 			}
 			b.WriteString(cell)
-			if t.CellConf[i].Align == Left {
+			if t.CellConf[i].Align == Left && i < len(v)-1 {
 				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
 			}
 			b.Write(t.CellConf[i].PadRight)
