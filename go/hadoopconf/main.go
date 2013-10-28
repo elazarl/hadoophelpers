@@ -122,7 +122,7 @@ func (o envAddOpts) Execute(args []string) error {
 	}
 	t := assignmentTable()
 	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
-	v.Append(strings.Join(args[1:], " "))
+	v.Prepend(strings.Join(args[1:], " "))
 	t.Add("", "", "now", v.Val)
 	if err := opt.getEnv().Save(); err != nil {
 		return err
