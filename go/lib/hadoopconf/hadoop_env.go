@@ -40,8 +40,8 @@ func (v *Var) Update(update, newval string) {
 
 // Del deletes value from the variable
 func (v *Var) Del(val string) {
-	re := regexp.MustCompile(` ?` + regexp.QuoteMeta(val) + ` ?`)
-	v.Val = re.ReplaceAllString(v.Val, " ")
+	re := regexp.MustCompile(` ?\b` + regexp.QuoteMeta(val) + `\b ?`)
+	v.Val = strings.TrimSpace(re.ReplaceAllString(v.Val, " "))
 }
 
 func (v *Var) Prepend(tok string) {
@@ -119,7 +119,6 @@ func parseExport(lineno int, line string) *Var {
 		s := matches[3]
 		if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
 			s = s[1:len(s)-1]
-			s = strings.Replace(s, `"`, `\"`, -1)
 		}
 		if matches[1] == "#" {
 			s = ""
