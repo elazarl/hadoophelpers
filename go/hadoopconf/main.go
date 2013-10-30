@@ -20,7 +20,9 @@ type getOpts struct {}
 
 type setOpts struct {}
 
-type envAddOpts struct {}
+type envAddOpts struct {
+	Append bool `long:"append" default:"false" description:"append value to environment variable"`
+}
 
 type envDelOpts struct {}
 
@@ -323,6 +325,11 @@ func main() {
 			fmt.Println("terminal not recognized or not supported (windows)")
 			return
 		}
+		completionparser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
+		linenoise.SetCompletionHandler(func (line string) []string {
+			args := parseCommandLine(line)
+			return Complete(completionparser, args)
+		})
 		for {
 			str, err := linenoise.Line("hadoopconf> ")
 			linenoise.AddHistory(str)
@@ -332,7 +339,8 @@ func main() {
 				}
 				break
 			}
-			if args, err := parser.ParseArgs(strings.Fields(str)); err != nil {
+			args := parseCommandLine(str)
+			if args, err := parser.ParseArgs(args); err != nil {
 				fmt.Println("error:", err)
 			} else if len(args) > 0 {
 				fmt.Println("excessive arguments:", args)
