@@ -58,6 +58,9 @@ func Complete(parser *flags.Parser, args []string) []string {
 		for name := range group.ShortNames {
 			options = append(options, "-" + string(name))
 		}
+		for name := range group.Commands {
+			options = append(options, name)
+		}
 	}
 	if len(args) == 0 {
 		return options
