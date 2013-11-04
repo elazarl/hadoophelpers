@@ -29,7 +29,7 @@ func completer(line *C.char, start, end int) **C.char {
 	if Completer == nil {
 		return nil
 	}
-	replacement, options := Completer(C.GoString(line), start, end)
+	replacement, options := Completer(C.GoString(C.rl_line_buffer), start, end)
 	raw := C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(len(options) + 2))
 
 	rv := (*[1<<31](*C.char))(raw)

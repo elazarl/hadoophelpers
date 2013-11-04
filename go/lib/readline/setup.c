@@ -6,4 +6,5 @@ extern char** completer(char*, int, int);
 
 void setup_readline_completion() {
 	rl_attempted_completion_function = (rl_completion_func_t*)completer;
+	rl_sort_completion_matches = 0;
 }
