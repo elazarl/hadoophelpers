@@ -2,13 +2,14 @@ package main
 
 import (
 	"errors"
-	"github.com/GeertJohan/go.linenoise"
 	//"github.com/davecgh/go-spew/spew"
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
+	"github.com/elazarl/hadoophelpers/go/lib/readline"
 	"github.com/elazarl/hadoophelpers/go/lib/hadoopconf"
 	"github.com/foize/go.sgr"
 	"github.com/jessevdk/go-flags"
@@ -31,6 +32,12 @@ type envSetOpts struct {}
 type envOpts struct {}
 
 func (o getOpts) Execute(args []string) error {
+	if opt.completeOpts != nil {
+		groups := getmygroups(o, &opt)
+		options := getGroupOptions(groups)
+		opt.completeOpts = append(options, opt.getConf().Keys()...)
+		return nil
+	}
 	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
@@ -66,6 +73,9 @@ func (o getOpts) Execute(args []string) error {
 }
 
 func (o setOpts) Execute(args []string) error {
+	if opt.completeOpts != nil {
+		return nil
+	}
 	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
@@ -94,6 +104,9 @@ func assignmentTable() *table.Table {
 }
 
 func (o envSetOpts) Execute(args []string) error {
+	if opt.completeOpts != nil {
+		return nil
+	}
 	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
@@ -114,6 +127,9 @@ func (o envSetOpts) Execute(args []string) error {
 }
 
 func (o envAddOpts) Execute(args []string) error {
+	if opt.completeOpts != nil {
+		return nil
+	}
 	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
@@ -134,6 +150,9 @@ func (o envAddOpts) Execute(args []string) error {
 }
 
 func (o envDelOpts) Execute(args []string) error {
+	if opt.completeOpts != nil {
+		return nil
+	}
 	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
@@ -154,6 +173,9 @@ func (o envDelOpts) Execute(args []string) error {
 }
 
 func (o envOpts) Execute(args []string) error {
+	if opt.completeOpts != nil {
+		return nil
+	}
 	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
@@ -201,6 +223,9 @@ type gOpts struct {
 	conf *hadoopconf.HadoopConf
 	env hadoopconf.Envs
 	executed bool
+	// set this to []string{} if you want command line options to autocomplete instead of executing themselves
+	completeOpts []string
+	parser *flags.Parser
 }
 
 func (opt *gOpts) setConfPath() {
@@ -325,20 +350,17 @@ func main() {
 			fmt.Println("terminal not recognized or not supported (windows)")
 			return
 		}
-		completionparser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
-		linenoise.SetCompletionHandler(func (line string) []string {
-			args := parseCommandLine(line)
-			return Complete(completionparser, args)
-		})
+		readline.Completer = func (line string, start, end int) (string, []string) {
+			completionparser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
+			args := parseCommandLine(line[:end])
+			return "", Complete(completionparser, args)
+		}
 		for {
-			str, err := linenoise.Line("hadoopconf> ")
-			linenoise.AddHistory(str)
-			if err != nil {
-				if err != linenoise.KillSignalError {
-					fmt.Println("Unexpected error: %s", err)
-				}
+			str, ok := readline.Readline("hadoopconf> ")
+			if !ok {
 				break
 			}
+			opt.completeOpts = nil
 			args := parseCommandLine(str)
 			if args, err := parser.ParseArgs(args); err != nil {
 				fmt.Println("error:", err)
@@ -347,4 +369,36 @@ func main() {
 			}
 		}
 	}
+}
+
+// given
+// type T struct {
+//     foo Foo `command:"moo"`
+//     bar Bar `command:"maa"`
+// }
+// getField(Foo{}, T{}) == "moo"
+// getField(Bar{}, T{}) == "maa"
+// getField(Baz{}, T{}) panics
+func getField(typ interface{}, strct interface{}) string {
+	v := reflect.TypeOf(strct)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		if f.Type.AssignableTo(reflect.TypeOf(typ)) {
+			return reflect.StructTag(f.Tag).Get("command")
+		}
+	}
+	panic("cannot find type in struct")
+}
+
+func getmygroups(o, strct interface{}) *flags.Group {
+	field := getField(o, strct)
+	for _, group := range opt.parser.Groups {
+		if mygroup, ok := group.Commands[field]; ok {
+			return mygroup
+		}
+	}
+	panic("my field not avail")
 }

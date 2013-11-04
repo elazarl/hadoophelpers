@@ -47,23 +47,42 @@ func fuzzyFind(partial string, options []string) []string {
 	return ws.strings
 }
 
+var CompletionLimit = 20
+
 func Complete(parser *flags.Parser, args []string) []string {
 	parser.Options |= flags.IgnoreUnknown
+	opt.completeOpts = []string{}
+	defer func() { opt.completeOpts = []string{} }()
+	opt.parser = parser
 	parser.ParseArgs(args)
 	options := []string{}
-	for _, group := range parser.Groups {
-		for name := range group.LongNames {
-			options = append(options, "--" + name)
-		}
-		for name := range group.ShortNames {
-			options = append(options, "-" + string(name))
-		}
-		for name := range group.Commands {
-			options = append(options, name)
+	if len(opt.completeOpts) > 0 {
+		options = opt.completeOpts
+	} else {
+		for _, group := range parser.Groups {
+			options = append(options, getGroupOptions(group)...)
 		}
 	}
 	if len(args) == 0 {
 		return options
 	}
-	return fuzzyFind(args[len(args)-1], options)
+	rv := fuzzyFind(args[len(args)-1], options)
+	if len(rv) >= CompletionLimit {
+		return rv[:CompletionLimit]
+	}
+	return rv
+}
+
+func getGroupOptions(group *flags.Group) []string {
+	options := []string{}
+	for name := range group.LongNames {
+		options = append(options, "--"+name)
+	}
+	for name := range group.ShortNames {
+		options = append(options, "-"+string(name))
+	}
+	for name := range group.Commands {
+		options = append(options, name)
+	}
+	return options
 }
