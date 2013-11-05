@@ -369,7 +369,7 @@ func parseCommandLine(line string) []string {
 }
 
 func main() {
-	parser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
+	parser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
 	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
 		fmt.Println("dead:", err)
 		os.Exit(1)
@@ -381,7 +381,7 @@ func main() {
 			return
 		}
 		readline.Completer = func (line string, start, end int) (string, []string) {
-			completionparser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
+			completionparser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
 			opt.executed = false
 			args := parseCommandLine(line[:end])
 			if line[end-1] == ' ' || line[end-1] == '\t' {

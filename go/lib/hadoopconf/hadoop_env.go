@@ -41,8 +41,14 @@ func (v *Var) Update(update, newval string) {
 
 // Del deletes value from the variable
 func (v *Var) Del(val string) {
-	re := regexp.MustCompile(` ?\b` + regexp.QuoteMeta(val) + `\b ?`)
-	v.Val = strings.TrimSpace(re.ReplaceAllString(v.Val, " "))
+	switch {
+	case strings.Contains(v.Val, " " + val + " "):
+		v.Val = strings.Replace(v.Val, " " + val + " ", " ", -1)
+	case strings.HasSuffix(v.Val, " " + val):
+		v.Val = v.Val[:len(v.Val) - len(val) - 1]
+	case strings.HasPrefix(v.Val, val + " "):
+		v.Val = v.Val[len(val)+1:]
+	}
 }
 
 func (v *Var) Prepend(tok string) {
