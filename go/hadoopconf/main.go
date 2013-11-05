@@ -74,6 +74,14 @@ func (o getOpts) Execute(args []string) error {
 
 func (o setOpts) Execute(args []string) error {
 	if opt.completeOpts != nil {
+		options := getGroupOptions(getmygroups(o, &opt))
+		for _, v := range opt.getConf().Keys() {
+			opt.completeOpts = append(opt.completeOpts, v + "=")
+		}
+		for _, v := range options {
+			opt.completeOpts = append(opt.completeOpts, v + " ")
+		}
+		readline.SuppressAppend()
 		return nil
 	}
 	opt.executed = true

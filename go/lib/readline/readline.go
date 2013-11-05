@@ -40,6 +40,10 @@ func completer(line *C.char, start, end int) **C.char {
 	return (**C.char)(raw)
 }
 
+func SuppressAppend() {
+	C.rl_completion_suppress_append = 1
+}
+
 func Readline(prompt string) (string, bool) {
 	line := C.readline(C.CString(prompt))
 	if line == nil {
