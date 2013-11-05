@@ -32,13 +32,13 @@ type envSetOpts struct {}
 type envOpts struct {}
 
 func (o getOpts) Execute(args []string) error {
+	opt.executed = true
 	if opt.completeOpts != nil {
 		groups := getmygroups(o, &opt)
 		options := getGroupOptions(groups)
 		opt.completeOpts = append(options, opt.getConf().Keys()...)
 		return nil
 	}
-	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -73,6 +73,7 @@ func (o getOpts) Execute(args []string) error {
 }
 
 func (o setOpts) Execute(args []string) error {
+	opt.executed = true
 	if opt.completeOpts != nil {
 		options := getGroupOptions(getmygroups(o, &opt))
 		for _, v := range opt.getConf().Keys() {
@@ -84,7 +85,6 @@ func (o setOpts) Execute(args []string) error {
 		readline.SuppressAppend()
 		return nil
 	}
-	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -112,10 +112,20 @@ func assignmentTable() *table.Table {
 }
 
 func (o envSetOpts) Execute(args []string) error {
+	opt.executed = true
 	if opt.completeOpts != nil {
+		options := getGroupOptions(getmygroups(o, &opt))
+		if len(args) <= 1 {
+			opt.completeOpts = append(options, opt.getEnv().Keys()...)
+		} else {
+			if v := opt.getEnv().Get(args[0]); v != nil {
+				opt.completeOpts = append(opt.completeOpts, v.Val)
+			} else {
+				opt.completeOpts = []string{}
+			}
+		}
 		return nil
 	}
-	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -135,10 +145,10 @@ func (o envSetOpts) Execute(args []string) error {
 }
 
 func (o envAddOpts) Execute(args []string) error {
+	opt.executed = true
 	if opt.completeOpts != nil {
 		return nil
 	}
-	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -158,10 +168,10 @@ func (o envAddOpts) Execute(args []string) error {
 }
 
 func (o envDelOpts) Execute(args []string) error {
+	opt.executed = true
 	if opt.completeOpts != nil {
 		return nil
 	}
-	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -181,10 +191,10 @@ func (o envDelOpts) Execute(args []string) error {
 }
 
 func (o envOpts) Execute(args []string) error {
+	opt.executed = true
 	if opt.completeOpts != nil {
 		return nil
 	}
-	opt.executed = true
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
@@ -360,7 +370,11 @@ func main() {
 		}
 		readline.Completer = func (line string, start, end int) (string, []string) {
 			completionparser := flags.NewParser(&opt, flags.HelpFlag + flags.PassDoubleDash)
+			opt.executed = false
 			args := parseCommandLine(line[:end])
+			if line[end-1] == ' ' || line[end-1] == '\t' {
+				args = append(args, "")
+			}
 			return "", Complete(completionparser, args)
 		}
 		for {

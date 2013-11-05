@@ -52,11 +52,14 @@ var CompletionLimit = 20
 func Complete(parser *flags.Parser, args []string) []string {
 	parser.Options |= flags.IgnoreUnknown
 	opt.completeOpts = []string{}
-	defer func() { opt.completeOpts = []string{} }()
+	defer func() {
+		opt.completeOpts = []string{}
+		opt.executed = false
+	}()
 	opt.parser = parser
 	parser.ParseArgs(args)
 	options := []string{}
-	if len(opt.completeOpts) > 0 {
+	if opt.executed {
 		options = opt.completeOpts
 	} else {
 		for _, group := range parser.Groups {
