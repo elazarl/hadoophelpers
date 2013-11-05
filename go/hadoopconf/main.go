@@ -120,8 +120,6 @@ func (o envSetOpts) Execute(args []string) error {
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
 				opt.completeOpts = append(opt.completeOpts, v.Val)
-			} else {
-				opt.completeOpts = []string{}
 			}
 		}
 		return nil
@@ -174,6 +172,14 @@ func (o envAddOpts) Execute(args []string) error {
 func (o envDelOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
+		options := getGroupOptions(getmygroups(o, &opt))
+		if len(args) <= 1 {
+			opt.completeOpts = append(options, opt.getEnv().Keys()...)
+		} else {
+			if v := opt.getEnv().Get(args[0]); v != nil {
+				opt.completeOpts = append(opt.completeOpts, parseCommandLine(v.Val)...)
+			}
+		}
 		return nil
 	}
 	if len(args) == 0 {
