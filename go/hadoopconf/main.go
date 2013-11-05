@@ -203,6 +203,8 @@ func (o envDelOpts) Execute(args []string) error {
 func (o envOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
+		options := getGroupOptions(getmygroups(o, &opt))
+		opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		return nil
 	}
 	if len(args) == 0 {
