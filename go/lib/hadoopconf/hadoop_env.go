@@ -48,6 +48,8 @@ func (v *Var) Del(val string) {
 		v.Val = v.Val[:len(v.Val) - len(val) - 1]
 	case strings.HasPrefix(v.Val, val + " "):
 		v.Val = v.Val[len(val)+1:]
+	case v.Val == val:
+		v.Val = ""
 	}
 }
 
