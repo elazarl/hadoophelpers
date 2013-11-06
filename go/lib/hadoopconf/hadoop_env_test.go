@@ -9,12 +9,12 @@ import (
 
 func TestEnvExportParse(t *testing.T) {
 	Terst(t)
-	v := parseExport(0, `export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"`)
+	v := parseExport("", 0, `export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"`)
 	if IsNot(v, nil) {
 		Is(v.Name, "HADOOP_NAMENODE_OPTS")
 		Is(v.Val, "-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS")
 	}
-	v = parseExport(0, `export HADOOP_OPTS=${foo:"bar gar"}`)
+	v = parseExport("", 0, `export HADOOP_OPTS=${foo:"bar gar"}`)
 	if IsNot(v, nil) {
 		Is(v.Name, "HADOOP_OPTS")
 		Is(v.Val, "${foo:\"bar gar\"}")
