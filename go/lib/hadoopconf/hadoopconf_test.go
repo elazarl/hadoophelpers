@@ -35,14 +35,14 @@ func init() {
 	os.MkdirAll(filepath.Join(tempDir, "tmp"), 0755)
 	if stat, err := os.Stat(filepath.Join(tempDir, hadoop2)); os.IsNotExist(err) {
 		bash(`FILE="` + hadoop2 + `";
-		(cd tmp && curl -vL "http://mirror.host4site.co.il/apache/hadoop/common/${FILE}/${FILE}.tar.gz"|tar xzf -) \
+		(cd tmp && curl -vL "http://apache.mivzakim.net/hadoop/common/${FILE}/${FILE}.tar.gz"|tar xzf -) \
 		&& cp -r tmp/$FILE/etc tmp/$FILE/etc_orig && mv tmp/"$FILE" .`)
 	} else if !stat.IsDir() {
 		panic(filepath.Join(tempDir, stat.Name()) + " is file instead of dir")
 	}
 	if stat, err := os.Stat(filepath.Join(tempDir, hadoop1)); os.IsNotExist(err) {
 		bash(`FILE="` + hadoop1 + `";
-		(cd tmp && curl -vL "http://mirror.host4site.co.il/apache/hadoop/common/${FILE}/${FILE}-bin.tar.gz"|tar xzf -) \
+		(cd tmp && curl -vL "http://apache.mivzakim.net/hadoop/common/${FILE}/${FILE}-bin.tar.gz"|tar xzf -) \
 		&& cp -r tmp/$FILE/conf tmp/$FILE/conf_orig && mv tmp/"$FILE" .`)
 	} else if !stat.IsDir() {
 		panic(filepath.Join(tempDir, stat.Name()) + " is file instead of dir")
