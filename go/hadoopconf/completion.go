@@ -51,7 +51,7 @@ func fuzzyFind(partial string, options []string) []string {
 
 var CompletionLimit = 20
 
-func Complete(parser *flags.Parser, args []string) []string {
+func Complete(parser *flags.Parser, args []string, partial string) []string {
 	parser.Options |= flags.IgnoreUnknown
 	opt.completeOpts = []string{}
 	defer func() {
@@ -68,10 +68,10 @@ func Complete(parser *flags.Parser, args []string) []string {
 			options = append(options, getGroupOptions(group)...)
 		}
 	}
-	if len(args) == 0 {
+	if partial == "" {
 		return options
 	}
-	rv := fuzzyFind(args[len(args)-1], options)
+	rv := fuzzyFind(partial, options)
 	if len(rv) >= CompletionLimit {
 		return rv[:CompletionLimit]
 	}

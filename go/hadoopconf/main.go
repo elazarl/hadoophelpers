@@ -115,7 +115,7 @@ func (o envSetOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
 		options := getGroupOptions(getmygroups(o, &opt))
-		if len(args) <= 1 {
+		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
@@ -146,7 +146,7 @@ func (o envAddOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
 		options := getGroupOptions(getmygroups(o, &opt))
-		if len(args) <= 1 {
+		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		}
 		return nil
@@ -173,7 +173,7 @@ func (o envDelOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
 		options := getGroupOptions(getmygroups(o, &opt))
-		if len(args) <= 1 {
+		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
@@ -385,9 +385,9 @@ func main() {
 			opt.executed = false
 			args := parseCommandLine(line[:end])
 			if line[end-1] == ' ' || line[end-1] == '\t' {
-				args = append(args, "")
+				return "", Complete(completionparser, args, "")
 			}
-			return "", Complete(completionparser, args)
+			return "", Complete(completionparser, args[:len(args)-1], args[len(args)-1])
 		}
 		for {
 			str, ok := readline.Readline("hadoopconf> ")
