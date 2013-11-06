@@ -22,4 +22,5 @@ _testmain.go
 *.exe
 go/hadoopconf/hadoopconf
 *.swp
+*.test
 go/lib/hadoopconf/hadoopconf.test
