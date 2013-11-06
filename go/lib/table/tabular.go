@@ -24,8 +24,8 @@ type Table struct {
 }
 
 func (t *Table) Add(cells ...string) *Table {
-	if len(t.Data) > 0 && len(cells) != len(t.CellConf) {
-		panic("expected " + strconv.Itoa(len(t.Data[0])) + " got " + strconv.Itoa(len(cells)))
+	if len(cells) != len(t.CellConf) {
+		panic("expected " + strconv.Itoa(len(t.CellConf)) + " got " + strconv.Itoa(len(cells)))
 	}
 	t.Data = append(t.Data, cells)
 	return t
