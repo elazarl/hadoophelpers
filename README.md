@@ -33,3 +33,25 @@ Usage Example
         <description></description>
       </property>
     </configuration> 
+
+One can also inspect environment variables
+
+    $ $GOPATH/bin/hadoopconf -c /tmp/gohadoopconf-test/hadoop-1.2.1 env '*TRACKER*'
+    hadoop-env.sh HADOOP_JOBTRACKER_OPTS  = -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
+    hadoop-env.sh HADOOP_TASKTRACKER_OPTS =
+    $ $GOPATH/bin/hadoopconf -c /tmp/gohadoopconf-test/hadoop-1.2.1
+    hadoopconf> envadd HADOOP_JOBTRACKER_OPTS -Dfoo
+    hadoopconf> env HADOOP_JOBTRACKER_OPTS
+    hadoop-env.sh HADOOP_JOBTRACKER_OPTS was -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
+                                         now -Dfoo -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
+    hadoopconf> env HADOOP_JOBTRA<tab>
+    HADOOP_JOBTRACKER_OPTS         HADOOP_LOG_DIR                 HADOOP_CLASSPATH               HADOOP_SLAVE_SLEEP             HADOOP_TASKTRACKER_OPTS
+    HADOOP_OPTS                    HADOOP_SSH_OPTS                HADOOP_NICENESS                HADOOP_DATANODE_OPTS           HADOOP_SECONDARYNAMENODE_OPTS
+    HADOOP_MASTER                  HADOOP_PID_DIR                 JAVA_HOME                      HADOOP_NAMENODE_OPTS
+    HADOOP_SLAVES                  HADOOP_HEAPSIZE                HADOOP_IDENT_STRING            HADOOP_BALANCER_OPTS
+    hadoopconf> env HADOOP_JOBTRACKER_OPTS
+    hadoop-env.sh HADOOP_JOBTRACKER_OPTS = -Dfoo -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
+    hadoopconf> envdel HADOOP_JOBTRACKER_OPTS -Dfoo
+    hadoop-env.sh HADOOP_JOBTRACKER_OPTS was -Dfoo -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
+                                         now -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
+
