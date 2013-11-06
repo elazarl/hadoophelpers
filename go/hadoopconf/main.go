@@ -384,7 +384,7 @@ func main() {
 			completionparser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
 			opt.executed = false
 			args := parseCommandLine(line[:end])
-			if line[end-1] == ' ' || line[end-1] == '\t' {
+			if len(line) == 0 || line[end-1] == ' ' || line[end-1] == '\t' {
 				return "", Complete(completionparser, args, "")
 			}
 			return "", Complete(completionparser, args[:len(args)-1], args[len(args)-1])
