@@ -1,10 +1,10 @@
 //package levenshtein
 package main
 
-import (
-	//"github.com/elazarl/hadoophelpers/go/lib/table"
+/*import (
+	"github.com/elazarl/hadoophelpers/go/lib/table"
 	"strconv"
-)
+)*/
 
 var (
 	DeleteCost = 5
@@ -13,6 +13,13 @@ var (
 )
 
 // translated from wikipedia Levenshtein Distance code snippet
+
+// LevenshteinDistance calculate how many transformations do we
+// need to apply to t, in order to make it an s.
+// For example LevenshteinDistance("a", "b") = 1*ReplaceCost, since
+// since we need one replace action to get from "b" to "a",
+// LevenshteinDistance("a", "ab") is 1*DeleteCost since we need to
+// delete one character to get from "ab" to "b".
 func LevenshteinDistance(s, t string) int {
     min := func(x int, xs ...int) int {
 	    for _, v := range xs {
