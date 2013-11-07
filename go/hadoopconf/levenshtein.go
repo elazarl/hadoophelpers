@@ -1,6 +1,11 @@
 //package levenshtein
 package main
 
+import (
+	//"github.com/elazarl/hadoophelpers/go/lib/table"
+	"strconv"
+)
+
 var (
 	DeleteCost = 5
 	ReplaceCost = 5
@@ -27,6 +32,12 @@ func LevenshteinDistance(s, t string) int {
     if len(t) == 0 {
 	    return len(s)
     }
+    /*tbl := table.New(len(t)+2)
+    headers := []string{"", ""}
+    for _, r := range t {
+	    headers = append(headers, string(r))
+    }
+    tbl.Add(headers...)*/
 
     // create two work vectors of integer distances
     v0, v1 := make([]int, len(t)+1), make([]int, len(t)+1)
@@ -38,6 +49,7 @@ func LevenshteinDistance(s, t string) int {
 	    v0[i] = i*DeleteCost
     }
 
+    //printRow(tbl, ' ', v0)
     for i := range s {
         // calculate v1 (current row distances) from the previous row v0
 
@@ -58,7 +70,17 @@ func LevenshteinDistance(s, t string) int {
 	for j := range v0 {
 		v0[j] = v1[j]
 	}
+	//printRow(tbl, rune(s[i]), v0)
     }
+    //println(tbl.String())
 
     return v1[len(t)]
 }
+
+/*func printRow(tbl *table.Table, r rune, v0 []int) {
+	row := []string{string(r)}
+	for _, e := range v0 {
+		row = append(row, strconv.Itoa(e))
+	}
+	tbl.Add(row...)
+}*/
