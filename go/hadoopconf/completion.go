@@ -56,8 +56,10 @@ func Complete(parser *flags.Parser, args []string, partial string) []string {
 	opt.completeOpts = []string{}
 	defer func() {
 		opt.completeOpts = []string{}
+		opt.completionCandidate = ""
 		opt.executed = false
 	}()
+	opt.completionCandidate = partial
 	opt.parser = parser
 	parser.ParseArgs(args)
 	options := []string{}

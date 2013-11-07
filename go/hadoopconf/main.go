@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	//"github.com/davecgh/go-spew/spew"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,7 +13,6 @@ import (
 	"github.com/foize/go.sgr"
 	"github.com/jessevdk/go-flags"
 	"github.com/elazarl/hadoophelpers/go/lib/table"
-	//"github.com/wsxiaoys/terminal"
 )
 
 type getOpts struct {}
@@ -76,13 +74,20 @@ func (o setOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
 		options := getGroupOptions(getmygroups(o, &opt))
-		for _, v := range opt.getConf().Keys() {
-			opt.completeOpts = append(opt.completeOpts, v + "=")
+		if strings.HasSuffix(opt.completionCandidate, "=") {
+			s, src := opt.getConf().SourceGet(opt.completionCandidate[:len(opt.completionCandidate)-1])
+			if src != hadoopconf.NoSource {
+				opt.completeOpts = []string{s}
+			}
+		} else {
+			for _, v := range opt.getConf().Keys() {
+				opt.completeOpts = append(opt.completeOpts, v + "=")
+			}
+			for _, v := range options {
+				opt.completeOpts = append(opt.completeOpts, v + " ")
+			}
+			readline.SuppressAppend()
 		}
-		for _, v := range options {
-			opt.completeOpts = append(opt.completeOpts, v + " ")
-		}
-		readline.SuppressAppend()
 		return nil
 	}
 	if len(args) == 0 {
@@ -255,6 +260,7 @@ type gOpts struct {
 	executed bool
 	// set this to []string{} if you want command line options to autocomplete instead of executing themselves
 	completeOpts []string
+	completionCandidate string
 	parser *flags.Parser
 }
 
