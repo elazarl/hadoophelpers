@@ -1,6 +1,12 @@
 //package levenshtein
 package main
 
+var (
+	DeleteCost = 5
+	ReplaceCost = 5
+	AddCost    = 1
+)
+
 // translated from wikipedia Levenshtein Distance code snippet
 func LevenshteinDistance(s, t string) int {
     min := func(x int, xs ...int) int {
@@ -29,7 +35,7 @@ func LevenshteinDistance(s, t string) int {
     // this row is A[0][i]: edit distance for an empty s
     // the distance is just the number of characters to delete from t
     for i := range v0 {
-	    v0[i] = i
+	    v0[i] = i*DeleteCost
     }
 
     for i := range s {
@@ -37,15 +43,15 @@ func LevenshteinDistance(s, t string) int {
 
         // first element of v1 is A[i+1][0]
         //   edit distance is delete (i+1) chars from s to match empty t
-        v1[0] = i + 1;
+        v1[0] = (i + 1) * AddCost
 
         // use formula to fill in the rest of the row
 	for j := range t {
-		cost := 1
+		cost := ReplaceCost
 		if s[i] == t[j] {
 			cost = 0
 		}
-		v1[j + 1] = min(v1[j]+1, v0[j+1]+1, v0[j]+cost)
+		v1[j + 1] = min(v1[j]+DeleteCost, v0[j+1]+AddCost, v0[j]+cost)
 	}
 
         // copy v1 (current row) to v0 (previous row) for next iteration
