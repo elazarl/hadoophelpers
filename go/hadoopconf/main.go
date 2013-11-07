@@ -15,6 +15,43 @@ import (
 	"github.com/elazarl/hadoophelpers/go/lib/table"
 )
 
+func main() {
+	parser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
+	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
+		fmt.Println("dead:", err)
+		os.Exit(1)
+	}
+	opt.getConf() // make sure we have correct conf
+	if !opt.executed {
+		if !IsTerminal(os.Stdout.Fd()) {
+			fmt.Println("terminal not recognized or not supported (windows)")
+			return
+		}
+		readline.Completer = func (line string, start, end int) (string, []string) {
+			completionparser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
+			opt.executed = false
+			args := parseCommandLine(line[:end])
+			if len(line) == 0 || line[end-1] == ' ' || line[end-1] == '\t' {
+				return "", Complete(completionparser, args, "")
+			}
+			return "", Complete(completionparser, args[:len(args)-1], args[len(args)-1])
+		}
+		for {
+			str, ok := readline.Readline("hadoopconf> ")
+			if !ok {
+				break
+			}
+			opt.completeOpts = nil
+			args := parseCommandLine(str)
+			if args, err := parser.ParseArgs(args); err != nil {
+				fmt.Println("error:", err)
+			} else if len(args) > 0 {
+				fmt.Println("excessive arguments:", args)
+			}
+		}
+	}
+}
+
 type getOpts struct {}
 
 type setOpts struct {}
@@ -372,43 +409,6 @@ func parseCommandLine(line string) []string {
 		args = append(args, string(next))
 	}
 	return args
-}
-
-func main() {
-	parser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
-	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
-		fmt.Println("dead:", err)
-		os.Exit(1)
-	}
-	opt.getConf() // make sure we have correct conf
-	if !opt.executed {
-		if !IsTerminal(os.Stdout.Fd()) {
-			fmt.Println("terminal not recognized or not supported (windows)")
-			return
-		}
-		readline.Completer = func (line string, start, end int) (string, []string) {
-			completionparser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
-			opt.executed = false
-			args := parseCommandLine(line[:end])
-			if len(line) == 0 || line[end-1] == ' ' || line[end-1] == '\t' {
-				return "", Complete(completionparser, args, "")
-			}
-			return "", Complete(completionparser, args[:len(args)-1], args[len(args)-1])
-		}
-		for {
-			str, ok := readline.Readline("hadoopconf> ")
-			if !ok {
-				break
-			}
-			opt.completeOpts = nil
-			args := parseCommandLine(str)
-			if args, err := parser.ParseArgs(args); err != nil {
-				fmt.Println("error:", err)
-			} else if len(args) > 0 {
-				fmt.Println("excessive arguments:", args)
-			}
-		}
-	}
 }
 
 // given
