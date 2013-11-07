@@ -7,8 +7,8 @@ package main
 )*/
 
 var (
-	DeleteCost = 5
-	ReplaceCost = 5
+	DeleteCost = 5 * 10
+	ReplaceCost = 10 * 10
 	AddCost    = 1
 )
 
