@@ -124,6 +124,7 @@ func (o setOpts) Execute(args []string) error {
 				opt.completeOpts = append(opt.completeOpts, v + " ")
 			}
 			readline.SuppressAppend()
+			readline.SuppressEnterKey()
 		}
 		return nil
 	}

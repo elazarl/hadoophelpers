@@ -12,6 +12,7 @@ package readline
  #include "readline/history.h"
 
  extern void setup_readline_completion();
+ extern int suppress_enter_key;
 */
 import "C"
 import "unsafe"
@@ -42,6 +43,10 @@ func completer(line *C.char, start, end int) **C.char {
 
 func SuppressAppend() {
 	C.rl_completion_suppress_append = 1
+}
+
+func SuppressEnterKey() {
+	C.suppress_enter_key = 1
 }
 
 func Readline(prompt string) (string, bool) {
