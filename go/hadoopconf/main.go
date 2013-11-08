@@ -290,7 +290,7 @@ type gOpts struct {
 	AddEnv envAddOpts `command:"envadd"`
 	DelEnv envDelOpts `command:"envdel"`
 	Env envOpts `command:"env"`
-	Verbose bool `short:"v" long:"verbose" default:"true" description:"Show verbose debug information"`
+	Verbose bool `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
 	conf *hadoopconf.HadoopConf
@@ -339,7 +339,10 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 	}
 	opt.conf, err = hadoopconf.New(p)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("cannot find hadoop configuration. Specify explicitly with -c/--conf")
+		if opt.Verbose {
+			fmt.Print(err)
+		}
 		os.Exit(1)
 	}
 	return opt.conf
