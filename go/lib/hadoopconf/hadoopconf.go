@@ -18,6 +18,13 @@ type HadoopConf struct {
 	YarnSite *ConfWithDefault
 }
 
+type HadoopDefaultConf struct {
+	CoreSite ConfSourcer
+	HdfsSite ConfSourcer
+	MapredSite ConfSourcer
+	YarnSite ConfSourcer
+}
+
 func (c *HadoopConf) Save() error {
 	for _, conf := range []*ConfWithDefault{c.CoreSite, c.HdfsSite, c.MapredSite, c.YarnSite} {
 		if err := conf.Conf.(*FileConfiguration).Save(); err != nil {
@@ -156,7 +163,7 @@ func oneRe(pat string) []*regexp.Regexp {
 	return []*regexp.Regexp{regexp.MustCompile(pat)}
 }
 
-func New(basedir string) (conf *HadoopConf, err error) {
+func Jars(basedir string) (*HadoopDefaultConf, error) {
 	coreDefault, err := getDefault("core-default.xml", oneRe(`hadoop-(common|core)-[0-9.]+-?(beta|alpha|rc)?\.jar`), basedir,
 		filepath.Join(basedir, "share/hadoop/common"), "/share/hadoop/common")
 	if err != nil {
@@ -174,6 +181,15 @@ func New(basedir string) (conf *HadoopConf, err error) {
 	}
 	yarnDefault, _ := getDefault("yarn-default.xml", oneRe(`hadoop-yarn-common-[0-9.]+-?(beta|alpha|rc)?\.jar`), basedir,
 		filepath.Join(basedir, "share/hadoop/yarn"), "/share/hadoop/yarn")
+	return &HadoopDefaultConf{
+		CoreSite: coreDefault,
+		HdfsSite: hdfsDefault,
+		MapredSite: mapredDefault,
+		YarnSite: yarnDefault,
+	}, nil
+}
+
+func New(basedir string, defaultConf *HadoopDefaultConf) (conf *HadoopConf, err error) {
 	j := func(s string) string {
 		return filepath.Join(basedir, s)
 	}
@@ -187,10 +203,10 @@ func New(basedir string) (conf *HadoopConf, err error) {
 	}
 	mapredSite, _ := getConf("mapred-site.xml", j("etc/hadoop"), j("conf"))
 	yarnSite, _ := getConf("yarn-site.xml", j("etc/hadoop"), j("conf"))
-	return FromConf(&ConfWithDefault{Default: coreDefault, Conf: coreSite},
-		&ConfWithDefault{Default: hdfsDefault, Conf: hdfsSite},
-		&ConfWithDefault{Default: mapredDefault, Conf: mapredSite},
-		&ConfWithDefault{Default: yarnDefault, Conf: yarnSite},
+	return FromConf(&ConfWithDefault{Default: defaultConf.CoreSite, Conf: coreSite},
+		&ConfWithDefault{Default: defaultConf.HdfsSite, Conf: hdfsSite},
+		&ConfWithDefault{Default: defaultConf.MapredSite, Conf: mapredSite},
+		&ConfWithDefault{Default: defaultConf.YarnSite, Conf: yarnSite},
 		), nil
 }
 

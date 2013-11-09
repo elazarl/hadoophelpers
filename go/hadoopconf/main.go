@@ -294,6 +294,7 @@ type gOpts struct {
 	Verbose bool `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
+	JarsPath string `short:"j" long:"jars" description:"where hadoop's jar are (also searches in DIR/share/hadoop/...)"`
 	conf *hadoopconf.HadoopConf
 	env hadoopconf.Envs
 	executed bool
@@ -338,7 +339,19 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 	} else if os.Getenv("HADOOP_CONF") != "" {
 		p = os.Getenv("HADOOP_CONF")
 	}
-	opt.conf, err = hadoopconf.New(p)
+	var jarsPath = opt.JarsPath
+	if jarsPath == "" {
+		jarsPath = p
+	}
+	jars, err := hadoopconf.Jars(jarsPath)
+	if err != nil {
+		fmt.Println("cannot find hadoop jars. Specify explicitly with -j/--jars")
+		if opt.Verbose {
+			fmt.Print(err)
+		}
+		os.Exit(1)
+	}
+	opt.conf, err = hadoopconf.New(p, jars)
 	if err != nil {
 		fmt.Println("cannot find hadoop configuration. Specify explicitly with -c/--conf")
 		if opt.Verbose {

@@ -86,7 +86,9 @@ func (vs expectValSrc) Empty() {
 func TestBasicHadoopConf(t *testing.T) {
 	Terst(t)
 
-	c, err := New(filepath.Join(tempDir, hadoop2))
+	jars, err := Jars(filepath.Join(tempDir, hadoop2))
+	FailOnErr(err)
+	c, err := New(filepath.Join(tempDir, hadoop2), jars)
 	FailOnErr(err)
 	ValSrc(c.SourceGet("hadoop.common.configuration.version")).Is("0.23.0", "core-default.xml")
 	ValSrc(c.SourceGet("hadoop.hdfs.configuration.version")).Is("1", "hdfs-default.xml")
@@ -99,7 +101,9 @@ func TestBasicHadoopConf(t *testing.T) {
 	Is(c.CoreSite.Set("in.core.site", "right here"), "")
 	ValSrc(c.SourceGet("in.core.site")).Is("right here", "core-site.xml")
 
-	c, err = New(filepath.Join(tempDir, hadoop1))
+	jars, err = Jars(filepath.Join(tempDir, hadoop1))
+	FailOnErr(err)
+	c, err = New(filepath.Join(tempDir, hadoop1), jars)
 	FailOnErr(err)
 	ValSrc(c.SourceGet("mapred.job.shuffle.input.buffer.percent")).Is("0.70", "mapred-default.xml")
 	ValSrc(c.SourceGet("io.sort.factor")).Is("10", "mapred-default.xml")
@@ -121,7 +125,9 @@ func TestHadoopConfWrite(t *testing.T) {
 	Terst(t)
 	defer restoreConf()
 
-	c, err := New(filepath.Join(tempDir, hadoop2))
+	jars, err := Jars(filepath.Join(tempDir, hadoop2))
+	FailOnErr(err)
+	c, err := New(filepath.Join(tempDir, hadoop2), jars)
 	FailOnErr(err)
 	ValSrc(c.SourceGet("hadoop.common.configuration.version")).Is("0.23.0", "core-default.xml")
 	Is(Val(c.SetIfExist("hadoop.common.configuration.version", "oldie")), "0.23.0")
@@ -131,7 +137,7 @@ func TestHadoopConfWrite(t *testing.T) {
 	_, err = os.Stat(filepath.Join(tempDir, hadoop2, "etc", "hadoop", "mapred-site.xml"))
 	Is(os.IsNotExist(err), true)
 
-	c, err = New(filepath.Join(tempDir, hadoop2))
+	c, err = New(filepath.Join(tempDir, hadoop2), jars)
 	FailOnErr(err)
 	ValSrc(c.SourceGet("hadoop.common.configuration.version")).Is("oldie", "core-site.xml")
 	ValSrc(c.SourceGet("hadoop.hdfs.configuration.version")).Is("1", "hdfs-site.xml")
@@ -143,7 +149,9 @@ func TestHadoopConfWrite(t *testing.T) {
 	_, err = os.Stat(filepath.Join(tempDir, hadoop2, "etc", "hadoop", "mapred-site.xml"))
 	Is(err, nil)
 
-	c, err = New(filepath.Join(tempDir, hadoop1))
+	jars, err = Jars(filepath.Join(tempDir, hadoop1))
+	FailOnErr(err)
+	c, err = New(filepath.Join(tempDir, hadoop1), jars)
 	FailOnErr(err)
 	ValSrc(c.SourceGet("mapred.job.shuffle.input.buffer.percent")).Is("0.70", "mapred-default.xml")
 	ValSrc(c.SourceGet("io.sort.factor")).Is("10", "mapred-default.xml")
