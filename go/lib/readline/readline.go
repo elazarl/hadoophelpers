@@ -56,3 +56,9 @@ func Readline(prompt string) (string, bool) {
 	}
 	return C.GoString(line), true
 }
+
+// DestroyReadline should be called before the program exits,
+// to keep the terminal usable
+func DestroyReadline() {
+	C.rl_deprep_terminal()
+}

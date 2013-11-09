@@ -23,6 +23,7 @@ func main() {
 	}
 	opt.getConf() // make sure we have correct conf
 	if !opt.executed {
+		defer readline.DestroyReadline()
 		if !IsTerminal(os.Stdout.Fd()) {
 			fmt.Println("terminal not recognized or not supported (windows)")
 			return
