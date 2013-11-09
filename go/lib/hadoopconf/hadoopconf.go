@@ -193,16 +193,16 @@ func New(basedir string, defaultConf *HadoopDefaultConf) (conf *HadoopConf, err 
 	j := func(s string) string {
 		return filepath.Join(basedir, s)
 	}
-	coreSite, err := getConf("core-site.xml", j("etc/hadoop"), j("conf"))
+	coreSite, err := getConf("core-site.xml", j("etc/hadoop"), j("conf"), basedir)
 	if err != nil {
 		return nil, err
 	}
-	hdfsSite, err := getConf("hdfs-site.xml", j("etc/hadoop"), j("conf"))
+	hdfsSite, err := getConf("hdfs-site.xml", j("etc/hadoop"), j("conf"), basedir)
 	if err != nil {
 		return nil, err
 	}
-	mapredSite, _ := getConf("mapred-site.xml", j("etc/hadoop"), j("conf"))
-	yarnSite, _ := getConf("yarn-site.xml", j("etc/hadoop"), j("conf"))
+	mapredSite, _ := getConf("mapred-site.xml", j("etc/hadoop"), j("conf"), basedir)
+	yarnSite, _ := getConf("yarn-site.xml", j("etc/hadoop"), j("conf"), basedir)
 	return FromConf(&ConfWithDefault{Default: defaultConf.CoreSite, Conf: coreSite},
 		&ConfWithDefault{Default: defaultConf.HdfsSite, Conf: hdfsSite},
 		&ConfWithDefault{Default: defaultConf.MapredSite, Conf: mapredSite},

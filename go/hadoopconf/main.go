@@ -294,7 +294,7 @@ type gOpts struct {
 	Verbose bool `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
-	JarsPath string `short:"j" long:"jars" description:"where hadoop's jar are (also searches in DIR/share/hadoop/...)"`
+	JarsPath string `short:"j" long:"jars" description:"where hadoop's jar are (also searches in DIR/share/hadoop/...), = conf dir if empty"`
 	conf *hadoopconf.HadoopConf
 	env hadoopconf.Envs
 	executed bool
