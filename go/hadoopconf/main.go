@@ -293,6 +293,7 @@ func (stat *statOpts) Execute(args []string) error {
 	t.Add("core-default.xml", c.CoreSite.Default.Source())
 	t.Add("hdfs-default.xml", c.HdfsSite.Default.Source())
 	t.Add("mapred-default.xml", c.MapredSite.Default.Source())
+	// This is not mistake, the yarn-site.xml may not exist now, the default must exist
 	if c.YarnSite.Default != nil {
 		t.Add("yarn-default.xml", c.YarnSite.Default.Source())
 	}
