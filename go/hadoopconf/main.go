@@ -21,9 +21,11 @@ func main() {
 		fmt.Println("dead:", err)
 		os.Exit(1)
 	}
-	opt.getConf() // make sure we have correct conf
 	if !opt.executed {
 		defer readline.DestroyReadline()
+		opt.interactive = true
+		// make sure we ask for configuration
+		opt.getConf()
 		if !IsTerminal(os.Stdout.Fd()) {
 			fmt.Println("terminal not recognized or not supported (windows)")
 			return
