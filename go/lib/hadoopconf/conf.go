@@ -20,6 +20,7 @@ type Source struct {
 type ConfSourcer interface {
 	Conf
 	SourceGet(key string) (value string, src Source)
+	Source() string
 }
 
 type ConfWithDefault struct {
@@ -49,6 +50,10 @@ func (cwd *ConfWithDefault) Keys() []string {
 		result = append(result, k)
 	}
 	return result
+}
+
+func (cwd *ConfWithDefault) Source() string {
+	return cwd.Conf.Source() + " default: " + cwd.Default.Source()
 }
 
 func (cwd *ConfWithDefault) SourceGet(key string) (value string, src Source)  {
@@ -113,6 +118,10 @@ func (fc *FileConfiguration) Set(key, val string) (oldval string) {
 	return fc.Configuration.Set(key, val)
 }
 
+func (fc *FileConfiguration) Source() string {
+	return fc.Path
+}
+
 func (fc *FileConfiguration) SourceGet(key string) (value string, source Source) {
 	if p := fc.get(key); p != nil {
 		return p.Value, Source{fc.Path, LocalFile}
@@ -133,7 +142,7 @@ func (fc *FileConfiguration) Save() error {
 
 type GeneratedConf struct {
 	*Configuration
-	Source Source
+	ConfSource Source
 }
 
 func NewGeneratedConfFromBytes(source Source, b []byte) (*GeneratedConf, error) {
@@ -160,10 +169,14 @@ func (gc *GeneratedConf) Keys() []string {
 	return keys
 }
 
+func (gc *GeneratedConf) Source() string {
+	return gc.ConfSource.Source
+}
+
 func (gc *GeneratedConf) SourceGet(key string) (value string, source Source) {
 	p := gc.get(key)
 	if p != nil {
-		return p.Value, gc.Source
+		return p.Value, gc.ConfSource
 	}
 	return "", NoSource
 }
