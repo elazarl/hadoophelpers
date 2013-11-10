@@ -69,6 +69,8 @@ type envSetOpts struct {}
 
 type envOpts struct {}
 
+type statOpts struct {}
+
 func (o getOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
@@ -279,6 +281,34 @@ func (o envOpts) Execute(args []string) error {
 	return nil
 }
 
+func (stat *statOpts) Execute(args []string) error {
+	t := table.New(2)
+	c := opt.getConf()
+	t.Add("core-site.xml", sgr.FgYellow + c.CoreSite.Conf.Source())
+	t.Add("hdfs-site.xml", sgr.FgYellow + c.HdfsSite.Conf.Source())
+	t.Add("mapred-site.xml", sgr.FgYellow + c.MapredSite.Conf.Source())
+	if c.YarnSite.Default != nil {
+		t.Add("yarn-site.xml", sgr.FgYellow + c.YarnSite.Conf.Source())
+	}
+	t.Add("core-default.xml", c.CoreSite.Default.Source())
+	t.Add("hdfs-default.xml", c.HdfsSite.Default.Source())
+	t.Add("mapred-default.xml", c.MapredSite.Default.Source())
+	if c.YarnSite.Default != nil {
+		t.Add("yarn-default.xml", c.YarnSite.Default.Source())
+	}
+	for _, env := range opt.getEnv() {
+		t.Add(filepath.Base(env.Path), sgr.FgGreen + env.Path)
+	}
+	if opt.UseColors() {
+		t.CellConf[0].PadLeft = []byte(sgr.FgGrey)
+		t.CellConf[0].PadRight = []byte(" " + sgr.ResetForegroundColor)
+		t.CellConf[1].PadLeft = []byte(sgr.ResetForegroundColor + sgr.Bold)
+		t.CellConf[1].PadRight = []byte(sgr.Reset)
+	}
+	fmt.Print(t.String())
+	return nil
+}
+
 func (o *gOpts) UseColors() bool {
 	if o.Color == "auto" {
 		return IsTerminal(os.Stdout.Fd())
@@ -292,6 +322,7 @@ type gOpts struct {
 	SetEnv envSetOpts `command:"envset"`
 	AddEnv envAddOpts `command:"envadd"`
 	DelEnv envDelOpts `command:"envdel"`
+	Stat statOpts `command:"stat"`
 	Env envOpts `command:"env"`
 	Verbose bool `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
 	Color string `long:"color" description:"use colors on output" default:"auto"`
@@ -304,6 +335,8 @@ type gOpts struct {
 	completeOpts []string
 	completionCandidate string
 	parser *flags.Parser
+	// marks whether or not we're in interactive mode
+	interactive bool
 }
 
 func (opt *gOpts) setConfPath() {
@@ -348,6 +381,12 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 	jars, err := hadoopconf.Jars(jarsPath)
 	if err != nil {
 		fmt.Println("cannot find hadoop jars. Specify explicitly with -j/--jars")
+		if opt.interactive {
+			var ok bool
+			if opt.JarsPath, ok = readline.Readline("enter path for hadoop's jars [tab complete files]: "); ok {
+				return opt.getConf()
+			}
+		}
 		if opt.Verbose {
 			fmt.Print(err)
 		}
@@ -356,6 +395,12 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 	opt.conf, err = hadoopconf.New(p, jars)
 	if err != nil {
 		fmt.Println("cannot find hadoop configuration. Specify explicitly with -c/--conf")
+		if opt.interactive {
+			var ok bool
+			if opt.ConfPath, ok = readline.Readline("enter path for hadoop's configuration files [tab complete files]: "); ok {
+				return opt.getConf()
+			}
+		}
 		if opt.Verbose {
 			fmt.Print(err)
 		}

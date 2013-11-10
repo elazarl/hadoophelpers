@@ -135,7 +135,7 @@ func getCoreDefault(basedirs ...string) (ConfSourcer, error) {
 	return ConfFromJar(jar, "core-default.xml")
 }
 
-func getConf(confName string, globs ...string) (ConfSourcer, error) {
+func getConf(confName string, globs ...string) (*FileConfiguration, error) {
 	for _, glob := range globs {
 		dirs, err := filepath.Glob(glob)
 		if err != nil {
@@ -194,6 +194,9 @@ func New(basedir string, defaultConf *HadoopDefaultConf) (conf *HadoopConf, err 
 		return filepath.Join(basedir, s)
 	}
 	coreSite, err := getConf("core-site.xml", j("etc/hadoop"), j("conf"), basedir)
+	if _, err := os.Stat(coreSite.Path); err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
