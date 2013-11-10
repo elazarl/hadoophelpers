@@ -194,10 +194,10 @@ func New(basedir string, defaultConf *HadoopDefaultConf) (conf *HadoopConf, err 
 		return filepath.Join(basedir, s)
 	}
 	coreSite, err := getConf("core-site.xml", j("etc/hadoop"), j("conf"), basedir)
-	if _, err := os.Stat(coreSite.Path); err != nil {
+	if err != nil {
 		return nil, err
 	}
-	if err != nil {
+	if _, err := os.Stat(coreSite.Path); err != nil {
 		return nil, err
 	}
 	hdfsSite, err := getConf("hdfs-site.xml", j("etc/hadoop"), j("conf"), basedir)

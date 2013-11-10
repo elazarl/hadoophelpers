@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/elazarl/hadoophelpers/go/lib/readline"
@@ -396,13 +397,60 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 	opt.conf, err = hadoopconf.New(p, jars)
 	if err != nil {
 		fmt.Println("cannot find hadoop configuration. Specify explicitly with -c/--conf")
-		if opt.interactive {
-			var ok bool
-			if opt.ConfPath, ok = readline.Readline("enter path for hadoop's configuration files [tab complete files]: "); ok {
-				return opt.getConf()
+		// try to guess hadoop location from popular locations
+		possibleConfs := map[string]*hadoopconf.HadoopConf{}
+		for _, l := range []string{"/etc/hadoop", "/etc/hadoop/*", "/var/run/cloudera-scm-agent/process/*"} {
+			if opt.Verbose {
+				fmt.Println("Checking", l)
+			}
+			paths, err := filepath.Glob(l)
+			if err != nil {
+				if opt.Verbose {
+					fmt.Println(err)
+				}
+				break
+			}
+			for _, p := range paths {
+				if opt.Verbose {
+					fmt.Println("Scanning", p)
+				}
+				if _, err := os.Stat(p); os.IsNotExist(err) {
+					continue
+				}
+				conf, err := hadoopconf.New(p, jars)
+				if err != nil {
+					if opt.Verbose {
+						fmt.Println(err)
+					}
+					continue
+				}
+				possibleConfs[p] = conf
 			}
 		}
-		if opt.Verbose {
+		if opt.interactive {
+			var ok bool
+			m := map[int]string{}
+			i := 0
+			prompt := "enter path for hadoop's configuration files [tab complete files]: "
+			if len(possibleConfs) > 0 {
+				fmt.Println("Automatically recognized existing hadoop configuration:")
+				prompt = "Enter path for hadoop's configuration files, or a number from paths above: "
+			}
+			for k := range possibleConfs {
+				m[i] = k
+				if opt.UseColors() {
+					fmt.Print(sgr.BgWhite, sgr.FgBlack, i, sgr.Reset, "] ", sgr.ResetBackgroundColor, sgr.Bold, sgr.FgGreen, k, "\n", sgr.Reset)
+				} else {
+					fmt.Print(i, "] ", k, "\n")
+				}
+			}
+			if opt.ConfPath, ok = readline.Readline(prompt); ok {
+				if i, err := strconv.Atoi(opt.ConfPath); err == nil && i < len(m) && i >= 0 {
+					opt.ConfPath = m[i]
+				}
+				return opt.getConf()
+			}
+		} else if opt.Verbose {
 			fmt.Print(err)
 		}
 		os.Exit(1)
