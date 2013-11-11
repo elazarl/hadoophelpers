@@ -15,6 +15,7 @@ package readline
  extern int suppress_enter_key;
 */
 import "C"
+import "os"
 import "unsafe"
 
 func init() {
@@ -49,12 +50,33 @@ func SuppressEnterKey() {
 	C.suppress_enter_key = 1
 }
 
+var (
+	HistoryFile = ""
+	historyRead = false
+)
+
 func Readline(prompt string) (string, bool) {
+	if HistoryFile != "" && !historyRead {
+		if rv, err := C.read_history(C.CString(HistoryFile)); rv != 0 {
+			os.Stderr.WriteString("Cannot read history file "+ HistoryFile +": " + err.Error() + "\n")
+		}
+		historyRead = true
+	}
 	line := C.readline(C.CString(prompt))
 	if line == nil {
 		return "", false
 	}
+	C.add_history(line)
+	if HistoryFile != "" {
+		C.write_history(C.CString(HistoryFile))
+	}
 	return C.GoString(line), true
+}
+
+func AddHistory(line string) {
+	str := C.CString(line)
+	defer C.free(unsafe.Pointer(str))
+	C.add_history(str)
 }
 
 // DestroyReadline should be called before the program exits,
