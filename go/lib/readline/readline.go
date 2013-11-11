@@ -51,14 +51,23 @@ func SuppressEnterKey() {
 }
 
 var (
-	HistoryFile = ""
+	historyFile = ""
+	historyFileCstr *C.char
 	historyRead = false
 )
 
+func SetHistoryFile(f string) {
+	historyFile = f
+	historyRead = false
+}
+
 func Readline(prompt string) (string, bool) {
-	if HistoryFile != "" && !historyRead {
-		if rv, err := C.read_history(C.CString(HistoryFile)); rv != 0 {
-			os.Stderr.WriteString("Cannot read history file "+ HistoryFile +": " + err.Error() + "\n")
+	if historyFile != "" && !historyRead {
+		C.clear_history()
+		C.free(unsafe.Pointer(historyFileCstr))
+		historyFileCstr = C.CString(historyFile)
+		if rv, err := C.read_history(historyFileCstr); rv != 0 {
+			os.Stderr.WriteString("Cannot read history file "+ historyFile +": " + err.Error() + "\n")
 		}
 		historyRead = true
 	}
@@ -67,8 +76,8 @@ func Readline(prompt string) (string, bool) {
 		return "", false
 	}
 	C.add_history(line)
-	if HistoryFile != "" {
-		C.write_history(C.CString(HistoryFile))
+	if historyFile != "" {
+		C.write_history(historyFileCstr)
 	}
 	return C.GoString(line), true
 }
@@ -83,4 +92,5 @@ func AddHistory(line string) {
 // to keep the terminal usable
 func DestroyReadline() {
 	C.rl_deprep_terminal()
+	C.free(unsafe.Pointer(historyFileCstr))
 }

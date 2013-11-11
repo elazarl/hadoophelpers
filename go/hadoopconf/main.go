@@ -30,11 +30,11 @@ func main() {
 			fmt.Fprintln(os.Stderr, "Cannot get current user:", err)
 			return
 		}
-		readline.HistoryFile = filepath.Join(u.HomeDir, ".hadoopconf_paths")
+		readline.SetHistoryFile(filepath.Join(u.HomeDir, ".hadoopconf_paths"))
 		opt.interactive = true
 		// make sure we ask for configuration
 		opt.getConf()
-		readline.HistoryFile = filepath.Join(u.HomeDir, ".hadoopconf_history")
+		readline.SetHistoryFile(filepath.Join(u.HomeDir, ".hadoopconf_history"))
 		if !IsTerminal(os.Stdout.Fd()) {
 			fmt.Println("terminal not recognized or not supported (windows)")
 			return
