@@ -3,7 +3,7 @@ package readline
 /*
  #cgo darwin CFLAGS: -I/opt/local/include
  #cgo darwin LDFLAGS: /opt/local/lib/libreadline.a /opt/local/lib/libncurses.a
- #cgo linux LDFLAGS: -Wl,-Bstatic -lreadline -lncurses -Wl,-Bdynamic
+ #cgo linux LDFLAGS: -Wl,-Bstatic -lreadline -ltinfo -Wl,-Bdynamic
 
  #include <stdio.h>
  #include <stdlib.h>
