@@ -66,7 +66,8 @@ func Readline(prompt string) (string, bool) {
 		C.clear_history()
 		C.free(unsafe.Pointer(historyFileCstr))
 		historyFileCstr = C.CString(historyFile)
-		if rv, err := C.read_history(historyFileCstr); rv != 0 {
+		_, staterr := os.Stat(historyFile)
+		if rv, err := C.read_history(historyFileCstr); rv != 0 && !os.IsNotExist(staterr) {
 			os.Stderr.WriteString("Cannot read history file "+ historyFile +": " + err.Error() + "\n")
 		}
 		historyRead = true
