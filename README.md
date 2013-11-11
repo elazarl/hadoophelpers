@@ -5,22 +5,28 @@ Collection of helper utilities for hadoop
 
 ## hadoopconf
 
+### Installation
+
+Currently, alpha release is available for Mac OS X and Linux, 64 bit only. Get it with
+
+    $ cd ~
+    $ curl -LO https://github.com/elazarl/hadoophelpers/releases/download/v0.0.1_`uname`_`uname -m`/hadoopconf
+    $ chmod +x hadoopconf
+
+### Usage
+
 A simple command line utility to get and set configuration of hadoop
 clusters.
 
-Get tool with:
-
-    go get github.com/elazarl/hadoophelpers/go/hadoopconf
-
 Usage Example
 
-    # $GOPATH/bin/hadoopconf --conf /opt/hadoop-2.1.0-beta get '*zook*'
+    # ~/hadoopconf --conf /opt/hadoop-2.1.0-beta get '*zook*'
     core-default.xml ha.zookeeper.acl                = world:anyone:rwcda
     core-default.xml ha.zookeeper.quorum             =
     core-default.xml ha.zookeeper.session-timeout.ms = 5000
     core-default.xml ha.zookeeper.auth               =
     core-default.xml ha.zookeeper.parent-znode       = /hadoop-ha
-    # $GOPATH/bin/hadoopconf --conf /opt/hadoop-2.1.0-beta
+    # ~/hadoopconf --conf /opt/hadoop-2.1.0-beta
     hadoopconf> get *cert
     core-default.xml hadoop.ssl.require.client.cert = false
     hadoopconf> set hadoop.ssl.require.client.cert=true
@@ -36,10 +42,10 @@ Usage Example
 
 One can also inspect environment variables
 
-    $ $GOPATH/bin/hadoopconf -c /tmp/gohadoopconf-test/hadoop-1.2.1 env '*TRACKER*'
+    $ ~/hadoopconf -c /tmp/gohadoopconf-test/hadoop-1.2.1 env '*TRACKER*'
     hadoop-env.sh HADOOP_JOBTRACKER_OPTS  = -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
     hadoop-env.sh HADOOP_TASKTRACKER_OPTS =
-    $ $GOPATH/bin/hadoopconf -c /tmp/gohadoopconf-test/hadoop-1.2.1
+    $ ~/hadoopconf -c /tmp/gohadoopconf-test/hadoop-1.2.1
     hadoopconf> envadd HADOOP_JOBTRACKER_OPTS -Dfoo
     hadoopconf> env HADOOP_JOBTRACKER_OPTS
     hadoop-env.sh HADOOP_JOBTRACKER_OPTS was -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
@@ -55,3 +61,16 @@ One can also inspect environment variables
     hadoop-env.sh HADOOP_JOBTRACKER_OPTS was -Dfoo -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
                                          now -Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER_OPTS
 
+### Source
+
+Make sure you have libreadlines, on ubuntu use
+
+    $ sudo apt-get install libreadline6-dev
+
+On Mac OS X you can try
+
+    $ sudo port install readline
+
+Then go get the actual project
+
+    $ go get github.com/elazarl/hadoophelpers/go/hadoopconf
