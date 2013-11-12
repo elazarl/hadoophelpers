@@ -447,10 +447,11 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 			for k := range possibleConfs {
 				m[i] = k
 				if opt.UseColors() {
-					fmt.Print(sgr.BgWhite, sgr.FgBlack, i, sgr.Reset, "] ", sgr.ResetBackgroundColor, sgr.Bold, sgr.FgGreen, k, "\n", sgr.Reset)
+					fmt.Print(sgr.FgRed, i, sgr.Reset, "] ", sgr.ResetBackgroundColor, sgr.Bold, sgr.FgGreen, k, "\n", sgr.Reset)
 				} else {
 					fmt.Print(i, "] ", k, "\n")
 				}
+				i++
 			}
 			if opt.ConfPath, ok = readline.Readline(prompt); ok {
 				if i, err := strconv.Atoi(opt.ConfPath); err == nil && i < len(m) && i >= 0 {
