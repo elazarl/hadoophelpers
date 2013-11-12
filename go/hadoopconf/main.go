@@ -432,7 +432,8 @@ func (opt *gOpts) getConf() *hadoopconf.HadoopConf {
 					}
 					continue
 				}
-				possibleConfs[p] = conf
+				base := filepath.Dir(conf.CoreSite.Conf.Source())
+				possibleConfs[base] = conf
 			}
 		}
 		if opt.interactive {
