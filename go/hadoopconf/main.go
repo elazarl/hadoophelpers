@@ -183,7 +183,12 @@ func (o envSetOpts) Execute(args []string) error {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
-				opt.completeOpts = append(opt.completeOpts, v.GetVal())
+				if v.GetVal() != "" {
+					opt.completeOpts = append(opt.completeOpts, v.GetVal())
+				}
+				if v.Comment != "" {
+					opt.completeOpts = append(opt.completeOpts, v.Comment)
+				}
 			}
 		}
 		return nil

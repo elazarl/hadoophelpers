@@ -22,6 +22,7 @@ type Env struct {
 type Var struct {
 	modified bool
 	line     int
+	Comment  string
 	Source   string
 	Name     string
 	val      string
@@ -141,10 +142,12 @@ func parseExport(filename string, lineno int, line string) *Var {
 		if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
 			s = s[1 : len(s)-1]
 		}
+		comment := ""
 		if matches[1] == "#" {
-			s = ""
+			comment = s
+			s       = ""
 		}
-		return &Var{false, lineno, filename, matches[2], s}
+		return &Var{false, lineno, comment, filename, matches[2], s}
 	}
 	return nil
 }
