@@ -11,6 +11,6 @@ func TestCompleteOptions(t *testing.T) {
 	Terst(t)
 	var opt envAddOpts
 	parser := flags.NewParser(&opt, flags.HelpFlag+flags.PassDoubleDash+flags.IgnoreUnknown)
-	Is(Complete(parser, []string{"-v"}, "--h"), []string{"--help", "-h", "--backup", "--append"})
-	Is(Complete(parser, []string{}, "--"), []string{"--help", "--backup", "--append", "-h"})
+	Is(Complete(parser, []string{"-v"}, "--h"), []string{"--help", "-h", "--append", "--backup"})
+	Is(Complete(parser, []string{}, "--"), []string{"--help", "--append", "--backup", "-h"})
 }
