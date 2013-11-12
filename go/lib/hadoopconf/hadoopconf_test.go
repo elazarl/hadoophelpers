@@ -12,10 +12,11 @@ import (
 
 var tempDir = "/tmp/gohadoopconf-test"
 
-var hadoops = []string {
+var hadoops = []string{
 	hadoop2,
 	hadoop1,
 }
+
 const (
 	hadoop2 = "hadoop-2.1.0-beta"
 	hadoop1 = "hadoop-1.2.1"
@@ -62,7 +63,7 @@ func FailOnErr(err error) {
 }
 
 type expectValSrc struct {
-	v string
+	v   string
 	src Source
 }
 

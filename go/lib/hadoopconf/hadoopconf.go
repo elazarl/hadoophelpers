@@ -12,17 +12,17 @@ import (
 
 type HadoopConf struct {
 	multiSourceConf
-	CoreSite *ConfWithDefault
-	HdfsSite *ConfWithDefault
+	CoreSite   *ConfWithDefault
+	HdfsSite   *ConfWithDefault
 	MapredSite *ConfWithDefault
-	YarnSite *ConfWithDefault
+	YarnSite   *ConfWithDefault
 }
 
 type HadoopDefaultConf struct {
-	CoreSite ConfSourcer
-	HdfsSite ConfSourcer
+	CoreSite   ConfSourcer
+	HdfsSite   ConfSourcer
 	MapredSite ConfSourcer
-	YarnSite ConfSourcer
+	YarnSite   ConfSourcer
 }
 
 func (c *HadoopConf) Save() error {
@@ -199,10 +199,10 @@ func Jars(basedir string) (*HadoopDefaultConf, error) {
 		"/usr/lib/hadoop-yarn",
 		"/share/hadoop/yarn")
 	return &HadoopDefaultConf{
-		CoreSite: coreDefault,
-		HdfsSite: hdfsDefault,
+		CoreSite:   coreDefault,
+		HdfsSite:   hdfsDefault,
 		MapredSite: mapredDefault,
-		YarnSite: yarnDefault,
+		YarnSite:   yarnDefault,
 	}, nil
 }
 
@@ -227,6 +227,5 @@ func New(basedir string, defaultConf *HadoopDefaultConf) (conf *HadoopConf, err 
 		&ConfWithDefault{Default: defaultConf.HdfsSite, Conf: hdfsSite},
 		&ConfWithDefault{Default: defaultConf.MapredSite, Conf: mapredSite},
 		&ConfWithDefault{Default: defaultConf.YarnSite, Conf: yarnSite},
-		), nil
+	), nil
 }
-

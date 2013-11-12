@@ -31,7 +31,7 @@ func (w *weightedStrings) Append(s string, weight int) {
 }
 
 func fuzzyScore(candidate, idol string) int {
-	d := LevenshteinDistance(idol,candidate)
+	d := LevenshteinDistance(idol, candidate)
 	if strings.HasPrefix(idol, candidate) {
 		d -= 1000 // 1,000 is the infininty of the levenstein distance
 	} else if strings.Contains(idol, candidate) {

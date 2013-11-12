@@ -1,8 +1,8 @@
 package main
 
 import (
-        "syscall"
-        "unsafe"
+	"syscall"
+	"unsafe"
 )
 
 func IsTerminal(fd uintptr) bool {

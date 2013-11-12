@@ -22,7 +22,7 @@ func init() {
 	C.setup_readline_completion()
 }
 
-type CompleteFunc func (text string, start, end int) (replacement string, options []string)
+type CompleteFunc func(text string, start, end int) (replacement string, options []string)
 
 var Completer CompleteFunc
 
@@ -32,9 +32,9 @@ func completer(line *C.char, start, end int) **C.char {
 		return nil
 	}
 	replacement, options := Completer(C.GoString(C.rl_line_buffer), start, end)
-	raw := C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(len(options) + 2))
+	raw := C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(len(options)+2))
 
-	rv := (*[1<<31](*C.char))(raw)
+	rv := (*[1 << 31](*C.char))(raw)
 	rv[0] = C.CString(replacement)
 	for i, w := range options {
 		rv[i+1] = C.CString(w)
@@ -51,9 +51,9 @@ func SuppressEnterKey() {
 }
 
 var (
-	historyFile = ""
+	historyFile     = ""
 	historyFileCstr *C.char
-	historyRead = false
+	historyRead     = false
 )
 
 func SetHistoryFile(f string) {
@@ -68,7 +68,7 @@ func Readline(prompt string) (string, bool) {
 		historyFileCstr = C.CString(historyFile)
 		_, staterr := os.Stat(historyFile)
 		if rv, err := C.read_history(historyFileCstr); rv != 0 && !os.IsNotExist(staterr) {
-			os.Stderr.WriteString("Cannot read history file "+ historyFile +": " + err.Error() + "\n")
+			os.Stderr.WriteString("Cannot read history file " + historyFile + ": " + err.Error() + "\n")
 		}
 		historyRead = true
 	}

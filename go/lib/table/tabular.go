@@ -13,14 +13,14 @@ const (
 )
 
 type CellConf struct {
-	Align Align
+	Align    Align
 	PadRight []byte
-	PadLeft []byte
+	PadLeft  []byte
 }
 
 type Table struct {
 	CellConf []CellConf
-	Data    [][]string
+	Data     [][]string
 }
 
 func (t *Table) Add(cells ...string) *Table {
@@ -50,7 +50,7 @@ func (t *Table) String() string {
 		return "\n"
 	}
 	b := new(bytes.Buffer)
-	max := func (p *int, v int) {
+	max := func(p *int, v int) {
 		if *p < v {
 			*p = v
 		}
@@ -66,11 +66,11 @@ func (t *Table) String() string {
 		for i, cell := range v {
 			b.Write(t.CellConf[i].PadLeft)
 			if t.CellConf[i].Align == Right {
-				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
+				b.Write(bytes.Repeat(spc, lengths[i]-len(cell)))
 			}
 			b.WriteString(cell)
 			if t.CellConf[i].Align == Left && i < len(v)-1 {
-				b.Write(bytes.Repeat(spc, lengths[i] - len(cell)))
+				b.Write(bytes.Repeat(spc, lengths[i]-len(cell)))
 			}
 			b.Write(t.CellConf[i].PadRight)
 		}

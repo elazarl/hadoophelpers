@@ -19,10 +19,10 @@ type Env struct {
 }
 
 type Var struct {
-	line int
+	line   int
 	Source string
-	Name string
-	Val  string
+	Name   string
+	Val    string
 }
 
 // Update adds a toadd, only if there's no tocheck
@@ -42,11 +42,11 @@ func (v *Var) Update(update, newval string) {
 // Del deletes value from the variable
 func (v *Var) Del(val string) {
 	switch {
-	case strings.Contains(v.Val, " " + val + " "):
-		v.Val = strings.Replace(v.Val, " " + val + " ", " ", -1)
-	case strings.HasSuffix(v.Val, " " + val):
-		v.Val = v.Val[:len(v.Val) - len(val) - 1]
-	case strings.HasPrefix(v.Val, val + " "):
+	case strings.Contains(v.Val, " "+val+" "):
+		v.Val = strings.Replace(v.Val, " "+val+" ", " ", -1)
+	case strings.HasSuffix(v.Val, " "+val):
+		v.Val = v.Val[:len(v.Val)-len(val)-1]
+	case strings.HasPrefix(v.Val, val+" "):
 		v.Val = v.Val[len(val)+1:]
 	case v.Val == val:
 		v.Val = ""
@@ -94,11 +94,12 @@ func (envs Envs) Save() error {
 	}
 	return nil
 }
-        /*snprintf(systembuf, sizeof(systembuf), "echo 'attach %d\nbt\nquit' | gdb -quiet _test_main.out ", getpid());*/
+
+/*snprintf(systembuf, sizeof(systembuf), "echo 'attach %d\nbt\nquit' | gdb -quiet _test_main.out ", getpid());*/
 
 func NewEnv(path string) (Envs, error) {
 	files := []string{}
-	for _, d := range []string{ path, filepath.Join(path, "etc", "hadoop"), filepath.Join(path, "conf") } {
+	for _, d := range []string{path, filepath.Join(path, "etc", "hadoop"), filepath.Join(path, "conf")} {
 		r, err := filepath.Glob(filepath.Join(d, "*-env.sh"))
 		if err == nil && len(r) > 0 {
 			files = r
@@ -127,7 +128,7 @@ func parseExport(filename string, lineno int, line string) *Var {
 	if matches := exportLine.FindStringSubmatch(line); matches != nil {
 		s := matches[3]
 		if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
-			s = s[1:len(s)-1]
+			s = s[1 : len(s)-1]
 		}
 		if matches[1] == "#" {
 			s = ""

@@ -13,7 +13,7 @@ type Conf interface {
 }
 
 type Source struct {
-	Source string
+	Source     string
 	SourceType SourceType
 }
 
@@ -24,7 +24,7 @@ type ConfSourcer interface {
 }
 
 type ConfWithDefault struct {
-	Conf ConfSourcer
+	Conf    ConfSourcer
 	Default ConfSourcer
 }
 
@@ -56,7 +56,7 @@ func (cwd *ConfWithDefault) Source() string {
 	return cwd.Conf.Source() + " default: " + cwd.Default.Source()
 }
 
-func (cwd *ConfWithDefault) SourceGet(key string) (value string, src Source)  {
+func (cwd *ConfWithDefault) SourceGet(key string) (value string, src Source) {
 	if cwd == nil {
 		return "", NoSource
 	}
@@ -78,19 +78,19 @@ func (cwd *ConfWithDefault) Set(key, value string) (oldval string) {
 }
 
 type Property struct {
-	Name  string `xml:"name"`
-	Value string `xml:"value"`
+	Name        string `xml:"name"`
+	Value       string `xml:"value"`
 	Description string `xml:"description"`
 }
 
 type Configuration struct {
-	XMLName xml.Name `xml:"configuration"`
+	XMLName  xml.Name    `xml:"configuration"`
 	Property []*Property `xml:"property"`
 }
 
 type FileConfiguration struct {
 	*Configuration
-	Path string
+	Path     string
 	modified bool
 }
 
@@ -114,7 +114,7 @@ func (fc *FileConfiguration) Keys() []string {
 }
 
 func (fc *FileConfiguration) Set(key, val string) (oldval string) {
-	fc.modified =  true
+	fc.modified = true
 	return fc.Configuration.Set(key, val)
 }
 
@@ -249,7 +249,7 @@ func (c *Configuration) getOrAdd(key string) *Property {
 }
 
 func (c *Configuration) Set(key, val string) (oldval string) {
-        p := c.getOrAdd(key)
+	p := c.getOrAdd(key)
 	oldval = p.Value
 	p.Value = val
 	return oldval
@@ -297,4 +297,3 @@ func NewConfigurationFromFile(path string) (*Configuration, error) {
 	}
 	return NewConfigurationFromByte(b)
 }
-

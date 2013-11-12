@@ -10,15 +10,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elazarl/hadoophelpers/go/lib/readline"
 	"github.com/elazarl/hadoophelpers/go/lib/hadoopconf"
+	"github.com/elazarl/hadoophelpers/go/lib/readline"
+	"github.com/elazarl/hadoophelpers/go/lib/table"
 	"github.com/foize/go.sgr"
 	"github.com/jessevdk/go-flags"
-	"github.com/elazarl/hadoophelpers/go/lib/table"
 )
 
 func main() {
-	parser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
+	parser := flags.NewParser(&opt, flags.HelpFlag|flags.PassDoubleDash|flags.IgnoreUnknown)
 	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
 		fmt.Println("dead:", err)
 		os.Exit(1)
@@ -39,8 +39,8 @@ func main() {
 			fmt.Println("terminal not recognized or not supported (windows)")
 			return
 		}
-		readline.Completer = func (line string, start, end int) (string, []string) {
-			completionparser := flags.NewParser(&opt, flags.HelpFlag | flags.PassDoubleDash | flags.IgnoreUnknown)
+		readline.Completer = func(line string, start, end int) (string, []string) {
+			completionparser := flags.NewParser(&opt, flags.HelpFlag|flags.PassDoubleDash|flags.IgnoreUnknown)
 			opt.executed = false
 			args := parseCommandLine(line[:end])
 			if len(line) == 0 || line[end-1] == ' ' || line[end-1] == '\t' {
@@ -64,21 +64,21 @@ func main() {
 	}
 }
 
-type getOpts struct {}
+type getOpts struct{}
 
-type setOpts struct {}
+type setOpts struct{}
 
 type envAddOpts struct {
 	Append bool `long:"append" default:"false" description:"append value to environment variable"`
 }
 
-type envDelOpts struct {}
+type envDelOpts struct{}
 
-type envSetOpts struct {}
+type envSetOpts struct{}
 
-type envOpts struct {}
+type envOpts struct{}
 
-type statOpts struct {}
+type statOpts struct{}
 
 func (o getOpts) Execute(args []string) error {
 	opt.executed = true
@@ -132,10 +132,10 @@ func (o setOpts) Execute(args []string) error {
 			}
 		} else {
 			for _, v := range opt.getConf().Keys() {
-				opt.completeOpts = append(opt.completeOpts, v + "=")
+				opt.completeOpts = append(opt.completeOpts, v+"=")
 			}
 			for _, v := range options {
-				opt.completeOpts = append(opt.completeOpts, v + " ")
+				opt.completeOpts = append(opt.completeOpts, v+" ")
 			}
 			readline.SuppressAppend()
 			readline.SuppressEnterKey()
@@ -293,11 +293,11 @@ func (o envOpts) Execute(args []string) error {
 func (stat *statOpts) Execute(args []string) error {
 	t := table.New(2)
 	c := opt.getConf()
-	t.Add("core-site.xml", sgr.FgYellow + c.CoreSite.Conf.Source())
-	t.Add("hdfs-site.xml", sgr.FgYellow + c.HdfsSite.Conf.Source())
-	t.Add("mapred-site.xml", sgr.FgYellow + c.MapredSite.Conf.Source())
+	t.Add("core-site.xml", sgr.FgYellow+c.CoreSite.Conf.Source())
+	t.Add("hdfs-site.xml", sgr.FgYellow+c.HdfsSite.Conf.Source())
+	t.Add("mapred-site.xml", sgr.FgYellow+c.MapredSite.Conf.Source())
 	if c.YarnSite.Default != nil {
-		t.Add("yarn-site.xml", sgr.FgYellow + c.YarnSite.Conf.Source())
+		t.Add("yarn-site.xml", sgr.FgYellow+c.YarnSite.Conf.Source())
 	}
 	t.Add("core-default.xml", c.CoreSite.Default.Source())
 	t.Add("hdfs-default.xml", c.HdfsSite.Default.Source())
@@ -307,7 +307,7 @@ func (stat *statOpts) Execute(args []string) error {
 		t.Add("yarn-default.xml", c.YarnSite.Default.Source())
 	}
 	for _, env := range opt.getEnv() {
-		t.Add(filepath.Base(env.Path), sgr.FgGreen + env.Path)
+		t.Add(filepath.Base(env.Path), sgr.FgGreen+env.Path)
 	}
 	if opt.UseColors() {
 		t.CellConf[0].PadLeft = []byte(sgr.FgGrey)
@@ -327,24 +327,24 @@ func (o *gOpts) UseColors() bool {
 }
 
 type gOpts struct {
-	Get getOpts `command:"get"`
-	Set setOpts `command:"set"`
-	SetEnv envSetOpts `command:"envset"`
-	AddEnv envAddOpts `command:"envadd"`
-	DelEnv envDelOpts `command:"envdel"`
-	Stat statOpts `command:"stat"`
-	Env envOpts `command:"env"`
-	Verbose bool `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
-	Color string `long:"color" description:"use colors on output" default:"auto"`
-	ConfPath string `short:"c" long:"conf" description:"Set hadoop configuration dir"`
-	JarsPath string `short:"j" long:"jars" description:"where hadoop's jar are (also searches in DIR/share/hadoop/...), = conf dir if empty"`
-	conf *hadoopconf.HadoopConf
-	env hadoopconf.Envs
+	Get      getOpts    `command:"get"`
+	Set      setOpts    `command:"set"`
+	SetEnv   envSetOpts `command:"envset"`
+	AddEnv   envAddOpts `command:"envadd"`
+	DelEnv   envDelOpts `command:"envdel"`
+	Stat     statOpts   `command:"stat"`
+	Env      envOpts    `command:"env"`
+	Verbose  bool       `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
+	Color    string     `long:"color" description:"use colors on output" default:"auto"`
+	ConfPath string     `short:"c" long:"conf" description:"Set hadoop configuration dir"`
+	JarsPath string     `short:"j" long:"jars" description:"where hadoop's jar are (also searches in DIR/share/hadoop/...), = conf dir if empty"`
+	conf     *hadoopconf.HadoopConf
+	env      hadoopconf.Envs
 	executed bool
 	// set this to []string{} if you want command line options to autocomplete instead of executing themselves
-	completeOpts []string
+	completeOpts        []string
 	completionCandidate string
-	parser *flags.Parser
+	parser              *flags.Parser
 	// marks whether or not we're in interactive mode
 	interactive bool
 }
