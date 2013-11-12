@@ -183,7 +183,7 @@ func (o envSetOpts) Execute(args []string) error {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
-				opt.completeOpts = append(opt.completeOpts, v.Val)
+				opt.completeOpts = append(opt.completeOpts, v.GetVal())
 			}
 		}
 		return nil
@@ -196,9 +196,9 @@ func (o envSetOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := assignmentTable()
-	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
-	v.Val = strings.Join(args[1:], " ")
-	t.Add("", "", "now", v.Val)
+	t.Add(filepath.Base(v.Source), v.Name, "was", v.GetVal())
+	v.SetVal(strings.Join(args[1:], " "))
+	t.Add("", "", "now", v.GetVal())
 	if err := opt.getEnv().Save(o.Backup); err != nil {
 		return err
 	}
@@ -223,9 +223,9 @@ func (o envAddOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := assignmentTable()
-	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
+	t.Add(filepath.Base(v.Source), v.Name, "was", v.GetVal())
 	v.Prepend(strings.Join(args[1:], " "))
-	t.Add("", "", "now", v.Val)
+	t.Add("", "", "now", v.GetVal())
 	if err := opt.getEnv().Save(o.Backup); err != nil {
 		return err
 	}
@@ -241,7 +241,7 @@ func (o envDelOpts) Execute(args []string) error {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
-				opt.completeOpts = append(opt.completeOpts, parseCommandLine(v.Val)...)
+				opt.completeOpts = append(opt.completeOpts, parseCommandLine(v.GetVal())...)
 			}
 		}
 		return nil
@@ -254,9 +254,9 @@ func (o envDelOpts) Execute(args []string) error {
 		fmt.Println("No such variable", v)
 	}
 	t := assignmentTable()
-	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
+	t.Add(filepath.Base(v.Source), v.Name, "was", v.GetVal())
 	v.Del(strings.Join(args[1:], " "))
-	t.Add("", "", "now", v.Val)
+	t.Add("", "", "now", v.GetVal())
 	if err := opt.getEnv().Save(o.Backup); err != nil {
 		return err
 	}
@@ -290,7 +290,7 @@ func (o envOpts) Execute(args []string) error {
 		if v == nil {
 			t.Add("", arg, "", "no property")
 		} else {
-			t.Add(filepath.Base(v.Source), arg, "=", v.Val)
+			t.Add(filepath.Base(v.Source), arg, "=", v.GetVal())
 		}
 	}
 	fmt.Print(t.String())

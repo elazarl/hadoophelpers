@@ -134,7 +134,7 @@ func TestHadoopConfWrite(t *testing.T) {
 	Is(Val(c.SetIfExist("hadoop.common.configuration.version", "oldie")), "0.23.0")
 	Is(Val(c.SetIfExist("hadoop.hdfs.configuration.version", "1")), "1")
 	Is(Val(c.SetIfExist("yarn.ipc.serializer.type", "writables")), "protocolbuffers")
-	Is(c.Save(), nil)
+	Is(c.Save(false), nil)
 	_, err = os.Stat(filepath.Join(tempDir, hadoop2, "etc", "hadoop", "mapred-site.xml"))
 	Is(os.IsNotExist(err), true)
 
@@ -146,7 +146,7 @@ func TestHadoopConfWrite(t *testing.T) {
 	ValSrc(c.SourceGet("mapreduce.jobtracker.jobhistory.task.numberprogresssplits")).Is("12", "mapred-default.xml")
 	Is(Val(c.SetIfExist("mapreduce.jobtracker.jobhistory.task.numberprogresssplits", "14")), "12")
 	ValSrc(c.SourceGet("yarn.ipc.serializer.type")).Is("writables", "yarn-site.xml")
-	Is(c.Save(), nil)
+	Is(c.Save(false), nil)
 	_, err = os.Stat(filepath.Join(tempDir, hadoop2, "etc", "hadoop", "mapred-site.xml"))
 	Is(err, nil)
 

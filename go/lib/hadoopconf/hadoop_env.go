@@ -20,15 +20,20 @@ type Env struct {
 }
 
 type Var struct {
-	line    int
-	Source  string
-	Name    string
-	Val     string
-	origVal string
+	modified bool
+	line     int
+	Source   string
+	Name     string
+	val      string
 }
 
-func (v *Var) Modified() bool {
-	return v.origVal != v.Val
+func (v *Var) GetVal() string {
+	return v.val
+}
+
+func (v *Var) SetVal(val string) {
+	v.modified = true
+	v.val = val
 }
 
 // Update adds a toadd, only if there's no tocheck
@@ -37,9 +42,9 @@ func (v *Var) Modified() bool {
 //     v.Update("-Xmx=", "-Xmx=1g")
 // which updates occurences of -Xmx=... to -Xmx=1g
 func (v *Var) Update(update, newval string) {
-	if strings.Contains(v.Val, update) {
+	if strings.Contains(v.GetVal(), update) {
 		re := regexp.MustCompile(regexp.QuoteMeta(update) + `[^ ]*`)
-		v.Val = re.ReplaceAllString(v.Val, newval)
+		v.SetVal(re.ReplaceAllString(v.GetVal(), newval))
 	} else {
 		v.Prepend(newval)
 	}
@@ -48,29 +53,29 @@ func (v *Var) Update(update, newval string) {
 // Del deletes value from the variable
 func (v *Var) Del(val string) {
 	switch {
-	case strings.Contains(v.Val, " "+val+" "):
-		v.Val = strings.Replace(v.Val, " "+val+" ", " ", -1)
-	case strings.HasSuffix(v.Val, " "+val):
-		v.Val = v.Val[:len(v.Val)-len(val)-1]
-	case strings.HasPrefix(v.Val, val+" "):
-		v.Val = v.Val[len(val)+1:]
-	case v.Val == val:
-		v.Val = ""
+	case strings.Contains(v.GetVal(), " "+val+" "):
+		v.SetVal(strings.Replace(v.GetVal(), " "+val+" ", " ", -1))
+	case strings.HasSuffix(v.GetVal(), " "+val):
+		v.SetVal(v.GetVal()[:len(v.GetVal())-len(val)-1])
+	case strings.HasPrefix(v.GetVal(), val+" "):
+		v.SetVal(v.GetVal()[len(val)+1:])
+	case v.GetVal() == val:
+		v.SetVal("")
 	}
 }
 
 func (v *Var) Prepend(tok string) {
-	if v.Val != "" {
+	if v.GetVal() != "" {
 		tok += " "
 	}
-	v.Val = tok + v.Val
+	v.SetVal(tok + v.GetVal())
 }
 
 func (v *Var) Append(tok string) {
-	if v.Val != "" {
-		v.Val += " "
+	if v.GetVal() != "" {
+		v.SetVal(v.GetVal() + " ")
 	}
-	v.Val += tok
+	v.SetVal(v.GetVal() + tok)
 }
 
 type Envs []*Env
@@ -139,7 +144,7 @@ func parseExport(filename string, lineno int, line string) *Var {
 		if matches[1] == "#" {
 			s = ""
 		}
-		return &Var{lineno, filename, matches[2], s, s}
+		return &Var{false, lineno, filename, matches[2], s}
 	}
 	return nil
 }
@@ -199,13 +204,13 @@ func (env *Env) Save(backup bool) error {
 	scanner := bufio.NewScanner(f)
 	varlines := make(map[int]*Var)
 	for _, v := range env.Vars {
-		if v.Modified() {
+		if v.modified {
 			varlines[v.line] = v
 		}
 	}
 	for i := 0; scanner.Scan(); i++ {
 		if v, ok := varlines[i]; ok {
-			out.WriteString("export " + v.Name + "=\"" + v.Val + "\"\n")
+			out.WriteString("export " + v.Name + "=\"" + v.GetVal() + "\"\n")
 		} else {
 			out.WriteString(scanner.Text() + "\n")
 		}
