@@ -126,7 +126,7 @@ func getDefault(filename string, res []*regexp.Regexp, basedirs ...string) (Conf
 
 func getCoreDefault(basedirs ...string) (ConfSourcer, error) {
 	hadoopCommonRegexp := []*regexp.Regexp{
-		regexp.MustCompile(`hadoop-(common|core)-[0-9.]+-?(beta|alpha|rc)?\.jar`),
+		regexp.MustCompile(`hadoop-(common|core)-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`),
 	}
 	jar, err := globRegexp(basedirs, hadoopCommonRegexp)
 	if err != nil {
@@ -159,28 +159,45 @@ type returnPanic struct {
 	err error
 }
 
-func oneRe(pat string) []*regexp.Regexp {
-	return []*regexp.Regexp{regexp.MustCompile(pat)}
+func re(pats ...string) []*regexp.Regexp {
+	res := []*regexp.Regexp{}
+	for _, pat := range pats {
+		res = append(res, regexp.MustCompile(pat))
+	}
+	return res
 }
 
 func Jars(basedir string) (*HadoopDefaultConf, error) {
-	coreDefault, err := getDefault("core-default.xml", oneRe(`hadoop-(common|core)-[0-9.]+-?(beta|alpha|rc)?\.jar`), basedir,
-		filepath.Join(basedir, "share/hadoop/common"), "/share/hadoop/common")
+	coreDefault, err := getDefault("core-default.xml", re(`hadoop-(common|core)-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`, "hadoop-common.jar"), basedir,
+		filepath.Join(basedir, "hadoop-common"),
+		"/usr/lib/hadoop",
+		"/share/hadoop/common")
 	if err != nil {
 		return nil, err
 	}
-	hdfsDefault, err := getDefault("hdfs-default.xml", oneRe(`hadoop-(hdfs|core)-[0-9.]+-?(beta|alpha|rc)?\.jar`), basedir,
-		filepath.Join(basedir, "share/hadoop/hdfs"), "/share/hadoop/hdfs")
+	hdfsDefault, err := getDefault("hdfs-default.xml", re(`hadoop-(hdfs|core)-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`), basedir,
+		filepath.Join(basedir, "share/hadoop/hdfs"),
+		filepath.Join(basedir, "hadoop-hdfs"),
+		"/share/hadoop/hdfs",
+		"/usr/lib/hadoop-hdfs")
 	if err != nil {
 		return nil, err
 	}
-	mapredDefault, err := getDefault("mapred-default.xml", oneRe(`hadoop-(mapreduce-client-)?core-[0-9.]+-?(beta|alpha|rc)?\.jar`), basedir,
-		filepath.Join(basedir, "share/hadoop/mapreduce"), "/share/hadoop/mapreduce")
+	mapredDefault, err := getDefault("mapred-default.xml", re(`hadoop-(mapreduce-client-)?core-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`), basedir,
+		filepath.Join(basedir, "hadoop-0.20-mapreduce"),
+		filepath.Join(basedir, "hadoop-mapreduce"),
+		filepath.Join(basedir, "share/hadoop/mapreduce"),
+		"/share/hadoop/mapreduce",
+		"/usr/lib/hadoop-0.20-mapreduce",
+		"/usr/lib/hadoop-mapreduce")
 	if mapredDefault == nil {
 		fmt.Println("got", err)
 	}
-	yarnDefault, _ := getDefault("yarn-default.xml", oneRe(`hadoop-yarn-common-[0-9.]+-?(beta|alpha|rc)?\.jar`), basedir,
-		filepath.Join(basedir, "share/hadoop/yarn"), "/share/hadoop/yarn")
+	yarnDefault, _ := getDefault("yarn-default.xml", re(`hadoop-yarn-common-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`), basedir,
+		filepath.Join(basedir, "share/hadoop/yarn"),
+		filepath.Join(basedir, "hadoop-yarn"),
+		"/usr/lib/hadoop-yarn",
+		"/share/hadoop/yarn")
 	return &HadoopDefaultConf{
 		CoreSite: coreDefault,
 		HdfsSite: hdfsDefault,
