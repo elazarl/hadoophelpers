@@ -10,7 +10,7 @@ Collection of helper utilities for hadoop
 Currently, alpha release is available for Mac OS X and Linux, 64 bit only. Get it with
 
     $ cd ~
-    $ curl -LO https://github.com/elazarl/hadoophelpers/releases/download/v0.0.1_`uname`_`uname -m`/hadoopconf
+    $ curl -LO https://github.com/elazarl/hadoophelpers/releases/download/v0.0.2_`uname`_`uname -m`/hadoopconf
     $ chmod +x hadoopconf
 
 ### Usage
