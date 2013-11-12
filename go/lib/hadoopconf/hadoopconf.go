@@ -169,7 +169,7 @@ func re(pats ...string) []*regexp.Regexp {
 
 func Jars(basedir string) (*HadoopDefaultConf, error) {
 	coreDefault, err := getDefault("core-default.xml", re(`hadoop-(common|core)-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`, "hadoop-common.jar"), basedir,
-		filepath.Join(basedir, "hadoop-common"),
+		filepath.Join(basedir, "share/hadoop/common"),
 		"/usr/lib/hadoop",
 		"/share/hadoop/common")
 	if err != nil {
