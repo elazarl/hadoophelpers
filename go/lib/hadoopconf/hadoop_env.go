@@ -20,10 +20,15 @@ type Env struct {
 }
 
 type Var struct {
-	line   int
-	Source string
-	Name   string
-	Val    string
+	line    int
+	Source  string
+	Name    string
+	Val     string
+	origVal string
+}
+
+func (v *Var) Modified() bool {
+	return v.origVal != v.Val
 }
 
 // Update adds a toadd, only if there's no tocheck
@@ -134,7 +139,7 @@ func parseExport(filename string, lineno int, line string) *Var {
 		if matches[1] == "#" {
 			s = ""
 		}
-		return &Var{lineno, filename, matches[2], s}
+		return &Var{lineno, filename, matches[2], s, s}
 	}
 	return nil
 }
@@ -194,7 +199,9 @@ func (env *Env) Save(backup bool) error {
 	scanner := bufio.NewScanner(f)
 	varlines := make(map[int]*Var)
 	for _, v := range env.Vars {
-		varlines[v.line] = v
+		if v.Modified() {
+			varlines[v.line] = v
+		}
 	}
 	for i := 0; scanner.Scan(); i++ {
 		if v, ok := varlines[i]; ok {
@@ -210,7 +217,7 @@ func (env *Env) Save(backup bool) error {
 		return err
 	}
 	if backup {
-		os.Rename(env.Path, env.Path + time.Now().Format(".2006-01-02_15_04.000"))
+		os.Rename(env.Path, env.Path+time.Now().Format(".2006-01-02_15_04.000"))
 	}
 	return os.Rename(out.Name(), env.Path)
 }
