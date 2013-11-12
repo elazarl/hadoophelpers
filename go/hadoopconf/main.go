@@ -181,6 +181,7 @@ func (o envSetOpts) Execute(args []string) error {
 		options := getGroupOptions(getmygroups(o, &opt))
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
+			readline.SuppressEnterKey()
 		} else {
 			if v := opt.getEnv().Get(args[0]); v != nil {
 				if v.GetVal() != "" {
