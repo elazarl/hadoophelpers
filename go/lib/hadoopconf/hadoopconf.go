@@ -25,9 +25,9 @@ type HadoopDefaultConf struct {
 	YarnSite   ConfSourcer
 }
 
-func (c *HadoopConf) Save() error {
+func (c *HadoopConf) Save(backup bool) error {
 	for _, conf := range []*ConfWithDefault{c.CoreSite, c.HdfsSite, c.MapredSite, c.YarnSite} {
-		if err := conf.Conf.(*FileConfiguration).Save(); err != nil {
+		if err := conf.Conf.(*FileConfiguration).Save(backup); err != nil {
 			return err
 		}
 	}

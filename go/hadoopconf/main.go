@@ -66,15 +66,22 @@ func main() {
 
 type getOpts struct{}
 
-type setOpts struct{}
+type setOpts struct {
+	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
+}
 
 type envAddOpts struct {
 	Append bool `long:"append" default:"false" description:"append value to environment variable"`
+	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
 }
 
-type envDelOpts struct{}
+type envDelOpts struct {
+	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
+}
 
-type envSetOpts struct{}
+type envSetOpts struct{
+	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
+}
 
 type envOpts struct{}
 
@@ -152,7 +159,7 @@ func (o setOpts) Execute(args []string) error {
 		}
 		opt.getConf().SetIfExist(parts[0], parts[1])
 	}
-	opt.getConf().Save()
+	opt.getConf().Save(o.Backup)
 	return nil
 }
 
@@ -192,7 +199,7 @@ func (o envSetOpts) Execute(args []string) error {
 	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
 	v.Val = strings.Join(args[1:], " ")
 	t.Add("", "", "now", v.Val)
-	if err := opt.getEnv().Save(); err != nil {
+	if err := opt.getEnv().Save(o.Backup); err != nil {
 		return err
 	}
 	fmt.Print(t.String())
@@ -219,7 +226,7 @@ func (o envAddOpts) Execute(args []string) error {
 	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
 	v.Prepend(strings.Join(args[1:], " "))
 	t.Add("", "", "now", v.Val)
-	if err := opt.getEnv().Save(); err != nil {
+	if err := opt.getEnv().Save(o.Backup); err != nil {
 		return err
 	}
 	fmt.Print(t.String())
@@ -250,7 +257,7 @@ func (o envDelOpts) Execute(args []string) error {
 	t.Add(filepath.Base(v.Source), v.Name, "was", v.Val)
 	v.Del(strings.Join(args[1:], " "))
 	t.Add("", "", "now", v.Val)
-	if err := opt.getEnv().Save(); err != nil {
+	if err := opt.getEnv().Save(o.Backup); err != nil {
 		return err
 	}
 	fmt.Print(t.String())

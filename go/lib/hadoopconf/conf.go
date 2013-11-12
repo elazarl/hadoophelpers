@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 type Conf interface {
@@ -129,9 +130,15 @@ func (fc *FileConfiguration) SourceGet(key string) (value string, source Source)
 	return "", NoSource
 }
 
-func (fc *FileConfiguration) Save() error {
+// Save saves the file configuration to hard drive, if backup = true will keep a backup
+func (fc *FileConfiguration) Save(backup bool) error {
 	if !fc.modified {
 		return nil
+	}
+	if _, err := os.Stat(fc.Path); err != nil && !os.IsNotExist(err) {
+		return err
+	} else if !os.IsNotExist(err) {
+		os.Rename(fc.Path, fc.Path + time.Now().Format(".2006-01-02_15_04.000"))
 	}
 	if err := ioutil.WriteFile(fc.Path, fc.Bytes(), 0655); err != nil {
 		return err

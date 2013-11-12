@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // an evironment variable is a line of the form
@@ -86,9 +87,9 @@ func (envs Envs) Keys() []string {
 	return keys
 }
 
-func (envs Envs) Save() error {
+func (envs Envs) Save(backup bool) error {
 	for _, env := range envs {
-		if err := env.Save(); err != nil {
+		if err := env.Save(backup); err != nil {
 			return err
 		}
 	}
@@ -181,7 +182,7 @@ func (env *Env) GetValue(name string) string {
 	return v.Name
 }
 
-func (env *Env) Save() error {
+func (env *Env) Save(backup bool) error {
 	out, err := ioutil.TempFile("/tmp", "gohadoop")
 	if err != nil {
 		return err
@@ -207,6 +208,9 @@ func (env *Env) Save() error {
 	}
 	if err := out.Close(); err != nil {
 		return err
+	}
+	if backup {
+		os.Rename(env.Path, env.Path + time.Now().Format(".2006-01-02_15_04.000"))
 	}
 	return os.Rename(out.Name(), env.Path)
 }
