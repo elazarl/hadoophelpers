@@ -190,6 +190,10 @@ func (o envSetOpts) Execute(args []string) error {
 				if v.Comment != "" {
 					opt.completeOpts = append(opt.completeOpts, v.Comment)
 				}
+				if strings.HasSuffix(args[0], "_HOME") || strings.HasSuffix(args[0], "_DIR") {
+					opt.completeOpts = append(opt.completeOpts, readline.FileCompletions(opt.completionCandidate)...)
+					readline.SuppressAppend()
+				}
 			}
 		}
 		return nil
