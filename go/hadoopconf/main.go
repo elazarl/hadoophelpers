@@ -23,6 +23,10 @@ func main() {
 		fmt.Println("dead:", err)
 		os.Exit(1)
 	}
+	if opt.Help {
+		parser.WriteHelp(os.Stdout)
+		os.Exit(1)
+	}
 	if !opt.executed {
 		defer readline.DestroyReadline()
 		u, err := user.Current()
@@ -343,6 +347,13 @@ func (o *gOpts) UseColors() bool {
 	return o.Color == "true" || o.Color == "t" || o.Color == "1"
 }
 
+type helpOpts struct{}
+
+func (helpOpts) Execute(args []string) error {
+	opt.Help = true
+	return nil
+}
+
 type gOpts struct {
 	Get      getOpts    `command:"get"`
 	Set      setOpts    `command:"set"`
@@ -351,6 +362,8 @@ type gOpts struct {
 	DelEnv   envDelOpts `command:"envdel"`
 	Stat     statOpts   `command:"stat"`
 	Env      envOpts    `command:"env"`
+	HelpCmd  helpOpts   `command:"help"`
+	Help     bool       `short:"h" long:"help" default:"false" description:"print help"`
 	Verbose  bool       `short:"v" long:"verbose" default:"false" description:"Show verbose debug information"`
 	Color    string     `long:"color" description:"use colors on output" default:"auto"`
 	ConfPath string     `short:"c" long:"conf" description:"Set hadoop configuration dir"`
