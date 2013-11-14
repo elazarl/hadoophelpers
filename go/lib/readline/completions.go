@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-
 func FileCompletions(path string) []string {
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() && !strings.HasSuffix(path, "/") {
 		return []string{path + "/"}

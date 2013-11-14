@@ -138,7 +138,7 @@ func (fc *FileConfiguration) Save(backup bool) error {
 	if _, err := os.Stat(fc.Path); err != nil && !os.IsNotExist(err) {
 		return err
 	} else if !os.IsNotExist(err) {
-		os.Rename(fc.Path, fc.Path + time.Now().Format(".2006-01-02_15_04.000"))
+		os.Rename(fc.Path, fc.Path+time.Now().Format(".2006-01-02_15_04.000"))
 	}
 	if err := ioutil.WriteFile(fc.Path, fc.Bytes(), 0655); err != nil {
 		return err

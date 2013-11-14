@@ -145,7 +145,7 @@ func parseExport(filename string, lineno int, line string) *Var {
 		comment := ""
 		if matches[1] == "#" {
 			comment = s
-			s       = ""
+			s = ""
 		}
 		return &Var{false, lineno, comment, filename, matches[2], s}
 	}

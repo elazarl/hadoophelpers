@@ -83,7 +83,7 @@ type envDelOpts struct {
 	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
 }
 
-type envSetOpts struct{
+type envSetOpts struct {
 	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
 }
 
