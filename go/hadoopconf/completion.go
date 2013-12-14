@@ -66,7 +66,10 @@ func Complete(parser *flags.Parser, args []string, partial string) []string {
 	if opt.executed {
 		options = opt.completeOpts
 	} else {
-		for _, group := range parser.Groups {
+		for _, command := range parser.Commands() {
+			options = append(options, command.Name)
+		}
+		for _, group := range parser.Groups() {
 			options = append(options, getGroupOptions(group)...)
 		}
 	}
@@ -82,14 +85,13 @@ func Complete(parser *flags.Parser, args []string, partial string) []string {
 
 func getGroupOptions(group *flags.Group) []string {
 	options := []string{}
-	for name := range group.LongNames {
-		options = append(options, "--"+name)
-	}
-	for name := range group.ShortNames {
-		options = append(options, "-"+string(name))
-	}
-	for name := range group.Commands {
-		options = append(options, name)
+	for _, option := range group.Options() {
+		if option.ShortName != 0 {
+			options = append(options, "--"+string(option.ShortName))
+		}
+		if option.LongName != "" {
+			options = append(options, "--"+option.LongName)
+		}
 	}
 	return options
 }

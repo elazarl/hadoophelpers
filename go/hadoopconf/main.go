@@ -593,8 +593,8 @@ func getField(typ interface{}, strct interface{}) string {
 
 func getmygroups(o, strct interface{}) *flags.Group {
 	field := getField(o, strct)
-	for _, group := range opt.parser.Groups {
-		if mygroup, ok := group.Commands[field]; ok {
+	for _, group := range opt.parser.Groups() {
+		if mygroup := group.Find(field); mygroup != nil {
 			return mygroup
 		}
 	}
