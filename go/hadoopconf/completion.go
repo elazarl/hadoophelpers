@@ -69,9 +69,7 @@ func Complete(parser *flags.Parser, args []string, partial string) []string {
 		for _, command := range parser.Commands() {
 			options = append(options, command.Name)
 		}
-		for _, group := range parser.Groups() {
-			options = append(options, getGroupOptions(group)...)
-		}
+		options = append(options, groupsOptions(parser.Groups())...)
 	}
 	if partial == "" {
 		return options
@@ -83,7 +81,20 @@ func Complete(parser *flags.Parser, args []string, partial string) []string {
 	return rv
 }
 
-func getGroupOptions(group *flags.Group) []string {
+func groupsOptions(groups []*flags.Group) []string {
+	options := []string{}
+	for _, group := range groups {
+		options = append(options, groupOptions(group)...)
+	}
+	return options
+}
+// groupOptions returns available options for a group as a string.
+// For example, for the group from
+//     struct {
+//         foo string `short:"f" long:"foo"`
+//     }
+// it'll return []string{"-f", "foo"}
+func groupOptions(group *flags.Group) []string {
 	options := []string{}
 	for _, option := range group.Options() {
 		if option.ShortName != 0 {

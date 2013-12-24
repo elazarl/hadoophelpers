@@ -94,8 +94,7 @@ type statOpts struct{}
 func (o getOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		groups := getmygroups(o, &opt)
-		options := getGroupOptions(groups)
+		options := groupsOptions(getmygroups(o, &opt))
 		opt.completeOpts = append(options, opt.getConf().Keys()...)
 		return nil
 	}
@@ -135,7 +134,7 @@ func (o getOpts) Execute(args []string) error {
 func (o setOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := getGroupOptions(getmygroups(o, &opt))
+		options := groupsOptions(getmygroups(o, &opt))
 		if strings.HasSuffix(opt.completionCandidate, "=") {
 			s, src := opt.getConf().SourceGet(opt.completionCandidate[:len(opt.completionCandidate)-1])
 			if src != hadoopconf.NoSource {
@@ -182,7 +181,7 @@ func assignmentTable() *table.Table {
 func (o envSetOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := getGroupOptions(getmygroups(o, &opt))
+		options := groupsOptions(getmygroups(o, &opt))
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 			readline.SuppressEnterKey()
@@ -223,7 +222,7 @@ func (o envSetOpts) Execute(args []string) error {
 func (o envAddOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := getGroupOptions(getmygroups(o, &opt))
+		options := groupsOptions(getmygroups(o, &opt))
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		}
@@ -254,7 +253,7 @@ func (o envAddOpts) Execute(args []string) error {
 func (o envDelOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := getGroupOptions(getmygroups(o, &opt))
+		options := groupsOptions(getmygroups(o, &opt))
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
@@ -285,7 +284,7 @@ func (o envDelOpts) Execute(args []string) error {
 func (o envOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := getGroupOptions(getmygroups(o, &opt))
+		options := groupsOptions(getmygroups(o, &opt))
 		opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		return nil
 	}
@@ -591,12 +590,10 @@ func getField(typ interface{}, strct interface{}) string {
 	panic("cannot find type in struct")
 }
 
-func getmygroups(o, strct interface{}) *flags.Group {
-	field := getField(o, strct)
-	for _, group := range opt.parser.Groups() {
-		if mygroup := group.Find(field); mygroup != nil {
-			return mygroup
-		}
+func getmygroups(o, strct interface{}) []*flags.Group {
+	commandname := getField(o, strct)
+	if command := opt.parser.Find(commandname); command != nil {
+		return command.Groups()
 	}
 	panic("my field not avail")
 }
