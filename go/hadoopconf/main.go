@@ -94,7 +94,7 @@ type statOpts struct{}
 func (o getOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := groupsOptions(getmygroups(o, &opt))
+		options := groupsOptions(opt.parser.Find(substructCommandTag(o, &opt)).Groups())
 		opt.completeOpts = append(options, opt.getConf().Keys()...)
 		return nil
 	}
@@ -134,7 +134,7 @@ func (o getOpts) Execute(args []string) error {
 func (o setOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := groupsOptions(getmygroups(o, &opt))
+		options := groupsOptions(opt.parser.Find(substructCommandTag(o, &opt)).Groups())
 		if strings.HasSuffix(opt.completionCandidate, "=") {
 			s, src := opt.getConf().SourceGet(opt.completionCandidate[:len(opt.completionCandidate)-1])
 			if src != hadoopconf.NoSource {
@@ -181,7 +181,7 @@ func assignmentTable() *table.Table {
 func (o envSetOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := groupsOptions(getmygroups(o, &opt))
+		options := groupsOptions(opt.parser.Find(substructCommandTag(o, &opt)).Groups())
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 			readline.SuppressEnterKey()
@@ -222,7 +222,7 @@ func (o envSetOpts) Execute(args []string) error {
 func (o envAddOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := groupsOptions(getmygroups(o, &opt))
+		options := groupsOptions(opt.parser.Find(substructCommandTag(o, &opt)).Groups())
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		}
@@ -253,7 +253,7 @@ func (o envAddOpts) Execute(args []string) error {
 func (o envDelOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := groupsOptions(getmygroups(o, &opt))
+		options := groupsOptions(opt.parser.Find(substructCommandTag(o, &opt)).Groups())
 		if len(args) == 0 {
 			opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		} else {
@@ -284,7 +284,7 @@ func (o envDelOpts) Execute(args []string) error {
 func (o envOpts) Execute(args []string) error {
 	opt.executed = true
 	if opt.completeOpts != nil {
-		options := groupsOptions(getmygroups(o, &opt))
+		options := groupsOptions(opt.parser.Find(substructCommandTag(o, &opt)).Groups())
 		opt.completeOpts = append(options, opt.getEnv().Keys()...)
 		return nil
 	}
@@ -569,31 +569,24 @@ func parseCommandLine(line string) []string {
 }
 
 // given
-// type T struct {
-//     foo Foo `command:"moo"`
-//     bar Bar `command:"maa"`
-// }
-// getField(Foo{}, T{}) == "moo"
-// getField(Bar{}, T{}) == "maa"
-// getField(Baz{}, T{}) panics
-func getField(typ interface{}, strct interface{}) string {
+//     type T struct {
+//         foo Foo `command:"moo"`
+//         bar Bar `command:"maa"`
+//     }
+// we'll have
+//     substructCommandTag(Foo{}, T{}) == "moo"
+//     substructCommandTag(Bar{}, T{}) == "maa"
+//     substructCommandTag(Baz{}, T{}) panics
+func substructCommandTag(substruct interface{}, strct interface{}) string {
 	v := reflect.TypeOf(strct)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		if f.Type.AssignableTo(reflect.TypeOf(typ)) {
+		if f.Type.AssignableTo(reflect.TypeOf(substruct)) {
 			return reflect.StructTag(f.Tag).Get("command")
 		}
 	}
 	panic("cannot find type in struct")
-}
-
-func getmygroups(o, strct interface{}) []*flags.Group {
-	commandname := getField(o, strct)
-	if command := opt.parser.Find(commandname); command != nil {
-		return command.Groups()
-	}
-	panic("my field not avail")
 }
