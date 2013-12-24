@@ -87,7 +87,7 @@ func getGroupOptions(group *flags.Group) []string {
 	options := []string{}
 	for _, option := range group.Options() {
 		if option.ShortName != 0 {
-			options = append(options, "--"+string(option.ShortName))
+			options = append(options, "-"+string(option.ShortName))
 		}
 		if option.LongName != "" {
 			options = append(options, "--"+option.LongName)
