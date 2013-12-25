@@ -68,7 +68,9 @@ func main() {
 	}
 }
 
-type getOpts struct{}
+type getOpts struct{
+	Local bool `long:"local" short:"l" description:"show properties from local files only, not from *-default.xml"`
+}
 
 type setOpts struct {
 	Backup bool `long:"backup" default:"true" description:"save backup of modified files in the form of oldfile.timestamp"`
@@ -99,7 +101,7 @@ func (o getOpts) Execute(args []string) error {
 		return nil
 	}
 	if len(args) == 0 {
-		return errors.New("get must have nonzero number arguments")
+		args = []string{"*"}
 	}
 	t := table.New(4)
 	c := opt.getConf()
@@ -123,7 +125,7 @@ func (o getOpts) Execute(args []string) error {
 		v, src := c.SourceGet(arg)
 		if v == "" && src == hadoopconf.NoSource {
 			t.Add("", arg, "", "no property")
-		} else {
+		} else if !(o.Local && strings.Contains(filepath.Base(src.Source), "default")) {
 			t.Add(filepath.Base(src.Source), arg, "=", v)
 		}
 	}
