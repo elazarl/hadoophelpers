@@ -226,8 +226,7 @@ func (msc multiSourceConf) SourceGet(key string) (string, Source) {
 
 func (msc multiSourceConf) SetIfExist(key, value string) (oldval string, src ConfSourcer) {
 	for _, s := range msc {
-		v := s.Get(key)
-		if v != "" {
+		if _, keysource := s.SourceGet(key); keysource != NoSource {
 			return s.Set(key, value), src
 		}
 	}
