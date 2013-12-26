@@ -183,6 +183,12 @@ func Jars(basedir string) (*HadoopDefaultConf, error) {
 	if err != nil {
 		return nil, err
 	}
+	// dfs.*.{kerberos,https}.principal dfs.*.keytab.file does not appear in hdfs-default.xml for some reason
+	for _, role := range []string {"namenode", "namenode.secondary", "datanode"} {
+		hdfsDefault.Set("dfs." + role + ".keytab.file", "")
+		hdfsDefault.Set("dfs." + role + ".kerberos.principal", "")
+		hdfsDefault.Set("dfs." + role + ".https.principal", "")
+	}
 	mapredDefault, err := getDefault("mapred-default.xml", re(`hadoop-(mapreduce-client-)?core-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`), basedir,
 		filepath.Join(basedir, "hadoop-0.20-mapreduce"),
 		filepath.Join(basedir, "hadoop-mapreduce"),
