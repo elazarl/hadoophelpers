@@ -189,6 +189,7 @@ func Jars(basedir string) (*HadoopDefaultConf, error) {
 		hdfsDefault.Set("dfs." + role + ".kerberos.principal", "")
 		hdfsDefault.Set("dfs." + role + ".https.principal", "")
 	}
+	hdfsDefault.Set("dfs.datanode.hostname", "")
 	mapredDefault, err := getDefault("mapred-default.xml", re(`hadoop-(mapreduce-client-)?core-[0-9.]+-?([a-zA-Z0-9._]+)?\.jar`), basedir,
 		filepath.Join(basedir, "hadoop-0.20-mapreduce"),
 		filepath.Join(basedir, "hadoop-mapreduce"),

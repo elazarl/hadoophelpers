@@ -20,7 +20,7 @@ import (
 func main() {
 	parser := flags.NewParser(&opt, flags.HelpFlag|flags.PassDoubleDash|flags.IgnoreUnknown)
 	if _, err := parser.ParseArgs(os.Args[1:]); err != nil && opt.executed {
-		fmt.Println("dead:", err)
+		fmt.Println("error:", err)
 		os.Exit(1)
 	}
 	if opt.Help {
@@ -157,12 +157,21 @@ func (o setOpts) Execute(args []string) error {
 	if len(args) == 0 {
 		return errors.New("get must have nonzero number arguments")
 	}
+	keys := []string{}
+	vals := []string{}
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) != 2 {
 			return errors.New("set accepts arguments of the form x=y, no '=' in " + arg)
 		}
-		opt.getConf().SetIfExist(parts[0], parts[1])
+		keys = append(keys, parts[0])
+		vals = append(vals, parts[1])
+		if _, exists := opt.getConf().SourceGet(parts[0]); exists == hadoopconf.NoSource {
+			return errors.New("cannot find key " +parts[0]+"in hadoop's defaults")
+		}
+	}
+	for i := 0; i<len(keys); i++ {
+		opt.getConf().SetIfExist(keys[i], vals[i])
 	}
 	opt.getConf().Save(o.Backup)
 	return nil
